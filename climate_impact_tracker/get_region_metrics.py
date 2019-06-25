@@ -11,9 +11,14 @@ def get_region_by_coords(coords):
     point = Point(lon, lat)
     zone_possibilities = []
     for zone in REGIONS_WITH_BOUNDING_BOXES:
-        if zone["geometry"].contains(point):
-            zone_possibilities.append(zone)
-
+        try:
+            if zone["geometry"].contains(point):
+                zone_possibilities.append(zone)
+        except:
+            import pdb; pdb.set_trace()    
+    if len(zone_possibilities) == 0:
+        raise ValueError("No possibilities found, may need to add a zone.")
+        
     z = min(zone_possibilities, key=lambda x: x["geometry"].area)
     return z
 

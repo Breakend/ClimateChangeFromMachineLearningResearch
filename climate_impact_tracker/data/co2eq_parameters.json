@@ -866,6 +866,10 @@
       "fossilFuelRatio": 0.07193323470898455,
       "renewableRatio": 0.9280667652910155
     },
+    "CH": {
+        "_source": "Used 2015-2016 average from https://www.sciencedirect.com/science/article/pii/S2352340918313076?via%3Dihub",
+        "carbonIntensity": 205.915
+      },
     "CL-SIC": {
       "_source": "Tomorrow",
       "carbonIntensity": 394.01636569017154,
@@ -1058,6 +1062,16 @@
       "fossilFuelRatio": 0.3029593355631178,
       "renewableRatio": 0.6970406644368823
     },
+    "HK" : {
+        "_source" : "https://www.pico.gov.hk/doc/en/events_information/3_Mr.Joseph_Law_CLP_Industry_Perspective_Achieving_Carbon_Reduction_in_HK.pdf",
+        "carbonIntensity" : 540,
+        "fossilFuelRatio": 0.67,
+        "renewableRatio": 0.0,
+        "nuclear" : 0.32,
+        "others" : 0.01,
+        "coal" : 0.41,
+        "gas" : 0.26
+    },
     "HU": {
       "_source": "Tomorrow",
       "carbonIntensity": 285.2180379725435,
@@ -1106,11 +1120,19 @@
       "fossilFuelRatio": 0.6325193600783726,
       "renewableRatio": 0.36748063992162733
     },
+    "IN-MH" : {
+        "_source" : "http://cbalance.in/wp-content/uploads/2013/01/cbalance_white-paper_Electricity-emission-factors_28Dec2012_revised_V21.pdf",
+        "carbonIntensity" : 970
+    },
     "IN-PB": {
       "_source": "Tomorrow",
       "carbonIntensity": 689.1312250543531,
       "fossilFuelRatio": 0.8338651287566249,
       "renewableRatio": 0.16613487124337512
+    },
+    "IN-TN" : {
+        "_source" : "http://cbalance.in/wp-content/uploads/2013/01/cbalance_white-paper_Electricity-emission-factors_28Dec2012_revised_V21.pdf",
+        "carbonIntensity" : 950
     },
     "IN-UP": {
       "_source": "Tomorrow",
@@ -1166,11 +1188,28 @@
       "fossilFuelRatio": 0.4918660366672224,
       "renewableRatio": 0.507360480294978
     },
+    "JP-TK" : {
+        "_source" : "https://www7.tepco.co.jp/newsroom/press/archives/2017/1447967_10469.html",
+        "carbonIntensity" : 474 
+    },
+    "JP-KN" : {
+        "_source" : "https://www.kepco.co.jp/english/corporate/list/report/pdf/e2018.pdf",
+        "carbonIntensity" : 420,
+        "nuclear" : 0.1, 
+        "thermal" : 0.7,
+        "hydro" : 0.12,
+        "renewable_energies" : 0.04,
+        "other" : 0.04
+    },
     "JP-KY": {
       "_source": "Tomorrow",
       "carbonIntensity": 399.64675654757554,
       "fossilFuelRatio": 0.5595814903184134,
       "renewableRatio": 0.08044518813657552
+    },
+    "KR" : {
+        "_source" : "https://newclimate.org/wp-content/uploads/2018/11/B2G_2018_South_Korea.pdf",
+        "carbonIntensity" : 492
     },
     "LT": {
       "_source": "Tomorrow",
@@ -1426,12 +1465,20 @@
       "fossilFuelRatio": 0.39086705879858774,
       "renewableRatio": 0.29010121100799435
     },
+    "US-OR" : {
+        "_source" : "https://www.eia.gov/electricity/state/oregon/",
+        "carbonIntensity" : 127.006
+    },
     "US-PJM": {
       "_source": "Tomorrow",
       "carbonIntensity": 396.93403342452757,
       "fossilFuelRatio": 0.6022174497011229,
       "renewableRatio": 0.050661533046279475
     },
+    "US-SC": {
+        "_source": "SERC Virginia/Carolina region of EPA summary tables from 2016 https://www.epa.gov/sites/production/files/2018-02/documents/egrid2016_summarytables.pdf",
+        "carbonIntensity": 367.4692403
+      },
     "US-SPP": {
       "_source": "Tomorrow",
       "carbonIntensity": 452.6045858184705,
@@ -1443,6 +1490,23 @@
       "carbonIntensity": 462.006385109754,
       "fossilFuelRatio": 0.6849134296193662,
       "renewableRatio": 0.05817284928886304
+    },
+    "US-TX": {
+        "_source" : "https://www.epa.gov/sites/production/files/2018-02/egrid2016_summarytables.xlsx and http://www.ercot.com/content/wcm/lists/181766/IntGenbyFuel2019.xlsx",
+        "carbonIntensity" : 459.9771362,
+        "biomass" : 0.001105861767,
+        "coal" : 0.2157480315,
+        "gas" : 0.05063167104,
+        "gas-cc" : 0.3709746282,
+        "hydro" : 0.004157480315,
+        "nuclear" : 0.1159755031,
+        "other" : 0.00002799650044,
+        "solar" : 0.01077165354,
+        "wind" : 0.230600175
+    },
+    "US-UT" : {
+        "_source": "2017 carbon only estimate from https://www.eia.gov/electricity/state/utah/",
+        "carbonIntensity" : 738.902
     },
     "UY": {
       "_source": "Tomorrow",
