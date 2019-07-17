@@ -56,6 +56,7 @@ class RAPLDomain(object):
 		return ":".join(splits[0:2])
 
 	def print_tree(self):
+		print self
 		for s in self.subdomains:
 			self.subdomains[s].print_tree()
 
@@ -71,7 +72,6 @@ class RAPLDomain(object):
 			diff = self.values[v] - other.values[v]
 			# if there was a rollover
 			if diff < 0:
-				print "rollover detected..."
 				diff = domain.max_values[v] + diff
 			domain.values[v] = diff
 
