@@ -4,8 +4,6 @@ from setuptools import setup, find_packages
 from distutils.version import LooseVersion
 
 
-from distutils.core import setup, Extension
-
 if sys.version_info.major != 3:
     print('This Python is only compatible with Python 3, but you are running '
           'Python {}. The installation will likely fail.'.format(sys.version_info.major))
@@ -36,9 +34,6 @@ if install_tf:
     if tf_gpu:
         print("A GPU was detected, tensorflow-gpu will be installed")
 
-module1 = Extension('rapl',
-                    sources = ['climate_impact_tracker/rapl.cpp'])
-
 setup(name='climate_impact_tracker',
       packages= find_packages(),
       install_requires=[
@@ -46,7 +41,8 @@ setup(name='climate_impact_tracker',
           'joblib',
           'numpy',
           'pandas',
-          'matplotlib'
+          'matplotlib',
+          'py-cpuinfo'
       ] + tf_dependency,
       extras_require={
         'tests': [
@@ -68,8 +64,7 @@ setup(name='climate_impact_tracker',
       keywords="reinforcement-learning-algorithms reinforcement-learning machine-learning "
                "gym openai baselines toolbox python data-science",
       license="MIT",
-      version="0.1",
-      ext_modules = [module1]
+      version="0.1"
       )
 
 # python setup.py sdist

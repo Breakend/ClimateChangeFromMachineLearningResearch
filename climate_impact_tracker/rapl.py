@@ -24,7 +24,6 @@ def _walk_rapl_dir(path):
 
 	for dirpath, dirnames, filenames in os.walk(path, topdown=True):		
 		for d in dirnames:
-			#print d, regex.search(d)
 			if not regex.search(d):
 				dirnames.remove(d)
 		yield dirpath, dirnames, filenames
@@ -54,11 +53,6 @@ class RAPLDomain(object):
 	def parent_id(self):
 		splits = self.id.split(":")
 		return ":".join(splits[0:2])
-
-	def print_tree(self):
-		print self
-		for s in self.subdomains:
-			self.subdomains[s].print_tree()
 
 	# take the difference of two domain samples
 	def __sub__(self, other):
@@ -143,10 +137,6 @@ class RAPLSample(object):
 			diff._link_tree(diffDomain)
 
 		return diff
-
-	def dump(self):
-		for domain in self.domains:
-			self.domains[domain].print_tree()
 
 	def energy(self, package, domain=None, unit=UJOULES):
 		if not domain:

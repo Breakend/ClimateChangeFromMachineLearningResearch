@@ -1,10 +1,5 @@
-# def _get_nvidia_power_measurement():
-#     measurementPower = os.popen("nvidia-smi -i 0 -q").read()
-#     tmp = os.popen("ps -Af").read()
-#     return nvidiaSmiParser(measurementPower, ["Power Draw"],num)
-
 import psutil,os
-import .rapl
+from climate_impact_tracker import rapl
 import time
 import subprocess
 import pandas as pd
@@ -14,6 +9,73 @@ from datetime import datetime
 
 from subprocess import Popen, PIPE
 from xml.etree.ElementTree import fromstring
+
+import os
+import sys
+import traceback
+from functools import wraps
+from .processor_info import get_my_cpu_info, get_gpu_info
+from multiprocessing import Process, Queue
+import csv
+
+DATAPATH = 'impacttracker/data.csv'
+INFOPATH = 'impacttracker/info.pkl'
+SLEEP_TIME = 60
+PUE = 1.58 
+
+def safe_file_path(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    return file_path
+
+def write_csv_data_to_file(file_path, data):
+    file_path = safe_file_path(file_path)
+    with open(file_path, 'a') as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(data)
+
+def processify(func):
+    '''Decorator to run a function as a process.
+    Be sure that every argument and the return value
+    is *pickable*.
+    The created process is joined, so the code does not
+    run in parallel.
+    '''
+
+    def process_func(q, *args, **kwargs):
+        try:
+            ret = func(*args, **kwargs)
+        except Exception:
+            ex_type, ex_value, tb = sys.exc_info()
+            error = ex_type, ex_value, ''.join(traceback.format_tb(tb))
+            ret = None
+        else:
+            error = None
+
+        q.put((ret, error))
+
+    # register original function with different name
+    # in sys.modules so it is pickable
+    process_func.__name__ = func.__name__ + 'processify_func'
+    setattr(sys.modules[__name__], process_func.__name__, process_func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        q = Queue()
+        p = Process(target=process_func, args=[q] + list(args), kwargs=kwargs)
+        p.start()
+        ret, error = q.get()
+        p.join()
+
+        if error:
+            ex_type, ex_value, tb_str = error
+            message = '%s (in subprocess)\n%s' % (str(ex_value), tb_str)
+            raise ex_type(message)
+
+        return ret
+    return wrapper
+
 
 def get_rapl_power(pid_list):
         s1 = rapl.RAPLMonitor.sample()
@@ -44,12 +106,15 @@ def get_rapl_power(pid_list):
 
         cpu_percent = 0
         mem_percent = 0
+        cpu_times = 0
         for process in pid_list:
-            p = psutil.Process(os.getpid())
+            p = psutil.Process(process)
             cpu_percent += p.cpu_percent()
+            cpu_times += p.cpu_times().user + p.cpu_times().system
             mem_percent += p.memory_percent()
 
         system_wide_cpu_percent = psutil.cpu_percent()
+        # TODO: how can we get system wide memory usage
         system_wide_mem_percent = psutil.memory_percent()
         print("Utilizing {} cpu percentage of a total system wide {} percent".format(cpu_percent, system_wide_cpu_percent))
         print("Utilizing {} ram percentage of a total system wide {} percent".format(mem_percent, system_wide_mem_percent))
@@ -67,7 +132,7 @@ def get_rapl_power(pid_list):
         total_power += (total_intel_power - total_dram_power - total_cpu_power) * power_credit_cpu
 
         total_intel_power = total_intel_power * power_credit
-        return total_intel_power
+        return total_intel_power, cpu_times, cpu_percent
 
 def get_nvidia_gpu_power(pid_list):
     # Find per process per gpu usage info
@@ -85,6 +150,8 @@ def get_nvidia_gpu_power(pid_list):
     num_gpus = int(xml.getiterator('attached_gpus')[0].text)
     results = []
     power = 0
+    per_gpu_absolute_percent_usage = {}
+
     for gpu_id, gpu in enumerate(xml.getiterator('gpu')):
         gpu_data = {}
 
@@ -122,6 +189,7 @@ def get_nvidia_gpu_power(pid_list):
         # processes
         processes = gpu.getiterator('processes')[0]
         infos = []
+        per_gpu_absolute_percent_usage[gpu_id] = 0 
         for info in processes.getiterator('process_info'):
             pid = info.getiterator('pid')[0].text
             process_name = info.getiterator('process_name')[0].text
@@ -129,6 +197,7 @@ def get_nvidia_gpu_power(pid_list):
             gpu_based_processes = process_percentage_used_gpu[process_percentage_used_gpu['gpu'] == gpu_id]
             sm_absolute_percent = process_percentage_used_gpu[process_percentage_used_gpu['pid'] == pid]['sm']
             sm_relative_percent = float(sm_absolute_percent) / float(process_percentage_used_gpu['sm'].sum())
+            per_gpu_absolute_percent_usage[gpu_id] += sm_absolute_percent
             infos.append({
                 'pid': pid,
                 'process_name' : process_name,
@@ -142,42 +211,57 @@ def get_nvidia_gpu_power(pid_list):
 
         results.append(gpu_data)
 
-    return power
+    return power, per_gpu_absolute_percent_usage
+
+# def _calculate_carbon_impact():
+    # TODO: carbon impact formula here based on estimated power attribution for gpu and cpu
+    # kWh = sum (Watts rapl (cpu + dram) + Watts(gpu)) * sampling interval
+    # multiply by region carbon intensity
+
+    # Probably do this for plotting not, live???? idk
 
 
+def read_latest_stats(log_dir):
+    log_path = os.path.join(log_dir, DATAPATH)
+    last_line = subprocess.check_output(["tail", "-1", log_path])
+    return last_line.split(",")
 
 
-class PowerTracker(object):
+def _sample_and_log_power(log_dir):
+    current_process =  psutil.Process(os.getppid())
+    process_ids = [current_process.pid] + [child.pid for child in current_process.children(recursive=True) ]
 
-    def __init__(self, tensorboard_log_dir, track_power=True, track_carbon_estimate=False):
-        # TODO: per process power or per machine power flag, per machine is likely more accurate 
-        # if the only job on the machine (not including the slurm cluster which counts all cpu usage)
-        # for the node in RAPL
-        self.track_power = track_power
-        self.track_carbon_estimate = track_carbon_estimate
-        self.tensorboard_log_dir = tensorboard_log_dir
-        current_process = psutil.Process()
-        self.all_processes = [current_process.pid] + [child.pid for child in current_process.children(recursive=True) ]
+    # First, try querying Intel's RAPL interface for dram at least
+    rapl_power_draw, cpu_time, average_cpu_utilization = get_rapl_power(process_ids)
+    nvidia_gpu_power_draw, per_gpu_absolute_percent_usage = get_nvidia_gpu_power(process_ids)
+    average_gpu_utilization = np.mean(per_gpu_absolute_percent_usage.values())
+    now = datetime.now()
+    timestamp = datetime.timestamp(now)
+    log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
+    data = [timestamp, rapl_power_draw, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_cpu_utilization]
+    write_csv_data_to_file(log_path, data)
 
-    def _sample_power(self):
-        # First, try querying Intel's RAPL interface for dram at least
-        rapl_power_draw = get_rapl_power(self.all_processes)
-        nvidia_gpu_power_draw = get_nvidia_gpu_power(self.all_processes)
-        now = datetime.now()
-        timestamp = datetime.timestamp(now)
-        log_path = os.path.join(self.tensorboard_log_dir, 'power_measurements/power.csv')
+@processify
+def launch_power_monitor(log_dir):
+    print("Starting process to monitor power")
+    #TODO: log one time info: CPU/GPU info, version of this package, region, datetime for start of experiment, CO2 estimate data.
+    # this will be used to build a latex table later.
+    region, zone_info =  get_zone_information_by_coords()
+    info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
 
-        with open(log_path, 'a+') as f:
-            if os.path.exists(log_path):
-                f.write("timestamp, rapl_power_sample,nvidia_gpu_power_sample\n")
-            f.write(timestamp + "," + str(rapl_power_draw) + "," + str(nvidia_gpu_power_draw) + "\n")
+    data = {
+        "cpu_info" : get_my_cpu_info(),
+        "gpu_info" : get_gpu_info(),
+        "climate_impact_tracker_version" : climate_impact_tracker.__version__,
+        "region" : region,
+        "experiment_start" : datetime.now(),
+        "region_carbon_intensity_estimate" : zone_info # kgCO2/kWh
+    }
 
-    def _continuously_monitor(self):
-        while True:
-            time.sleep(10)
-            self._sample_power()
-    
-    def run(self):
-        thread = threading.Thread(target=self._continuously_monitor)
-        thread.start()
-        print("Spun off power monitoring thread.")
+    with open(info_path, 'wb') as info_file:
+        pickle.dump(data, info_file)
+
+    while True:
+        time.sleep(SLEEP_TIME)
+        _sample_and_log_power(log_dir)
+

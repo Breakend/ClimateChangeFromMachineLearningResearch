@@ -1,11 +1,9 @@
 # Code in file tensor/two_layer_net_tensor.py
 import torch
 
-from climate_impact_tracker.compute_tracker import PytorchTracker
+from climate_impact_tracker.compute_tracker import launch_power_monitor
 
-
-tracker = PytorchTracker()
-tracker.start_track()
+launch_power_monitor('./testlogdir/')
 
 device = torch.device('cpu')
 # device = torch.device('cuda') # Uncomment this to run on GPU
@@ -45,6 +43,5 @@ for t in range(500):
   # Update weights using gradient descent
   w1 -= learning_rate * grad_w1
   w2 -= learning_rate * grad_w2
+  read_latest_stats('./testlogdir/')
 
-tracker.stop_track()
-tracker.log_stats()
