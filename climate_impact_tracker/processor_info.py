@@ -1,5 +1,9 @@
 import requests
 import pandas as pd
+from subprocess import Popen, PIPE
+
+from xml.etree.ElementTree import fromstring
+
 import cpuinfo
 from bs4 import BeautifulSoup
 import re
@@ -12,7 +16,7 @@ def get_gpu_info():
     datas = []
     for gpu_id, gpu in enumerate(xml.getiterator('gpu')):
         gpu_data = {}
-        name = gpu.getiterator('product_name')[0].text
+        name = [x for x in gpu.getiterator('product_name')][0].text
         gpu_data['name'] = name
         datas.append(gpu_data)
     return datas

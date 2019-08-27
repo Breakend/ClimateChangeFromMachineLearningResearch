@@ -1,16 +1,16 @@
 # Code in file tensor/two_layer_net_tensor.py
 import torch
+from climate_impact_tracker.compute_tracker import ImpactTracker
 
-from climate_impact_tracker.compute_tracker import launch_power_monitor
+tracker = ImpactTracker('./testlogs/')
 
-launch_power_monitor('./testlogdir/')
-
-device = torch.device('cpu')
-# device = torch.device('cuda') # Uncomment this to run on GPU
+tracker.launch_impact_monitor()
+#device = torch.device('cpu')
+device = torch.device('cuda') # Uncomment this to run on GPU
 
 # N is batch size; D_in is input dimension;
 # H is hidden dimension; D_out is output dimension.
-N, D_in, H, D_out = 64, 1000, 100, 10
+N, D_in, H, D_out = 1024, 10000, 1000, 100
 
 # Create random input and output data
 x = torch.randn(N, D_in, device=device)
@@ -21,7 +21,7 @@ w1 = torch.randn(D_in, H, device=device)
 w2 = torch.randn(H, D_out, device=device)
 
 learning_rate = 1e-6
-for t in range(500):
+for t in range(1000):
   # Forward pass: compute predicted y
   h = x.mm(w1)
   h_relu = h.clamp(min=0)
@@ -43,5 +43,4 @@ for t in range(500):
   # Update weights using gradient descent
   w1 -= learning_rate * grad_w1
   w2 -= learning_rate * grad_w2
-  read_latest_stats('./testlogdir/')
-
+  tracker.get_latest_info_and_check_for_errors()

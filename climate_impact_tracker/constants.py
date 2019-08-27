@@ -1,12 +1,47 @@
-import commentjson as json
+import ujson as json
+import multiprocessing
 from shapely.geometry import shape
 import os 
 import numpy as np
+import sys
+from tqdm import tqdm
+
+# def _read_terrible_json_lines(lines):
+#    lines_fixed = []
+#    for x in lines:
+#        x = x.replace("/", "\/")
+#        x = json.loads(x)
+#        x["geometry"] = shape(x["geometry"])
+#        lines_fixed.append(x)
+#    return lines_fixed
+
+#def read_terrible_json(path):
+#    print("Reading lines...")
+#    numlines = 10
+#     
+#    with open(path, 'rt') as f:
+#        lines = f.readlines()
+
+#   print("Processing {} lines...".format(len(lines)))
+# reduce the result dicts into a single dict
+#    tasks =  [(lines[x:min(x+numlines, len(lines))]) for x in range(0, len(lines), numlines)]
+
+#    results = list(tqdm(map(_read_terrible_json_lines, tasks ), total=int(len(lines)/numlines)))
+#    result = [item for sublist in results for item in sublist]
+
+#    pool.close()
+#    pool.join()
+#    pbar.close()
+
+#    return result
+
+from tqdm import tqdm
 
 def read_terrible_json(path):
     with open(path, 'rt') as f:
         lines = []
-        for x in f.readlines():
+        test_read_lines = [x for x in f.readlines()]
+        for x in tqdm(test_read_lines): 
             if x:
                 x = x.replace("/", "\/")
                 x = json.loads(x) 
@@ -20,6 +55,7 @@ def _load_zone_info():
     return x
 
 def load_regions_with_bounding_boxes():
+    print("loading region bounding boxes for computing carbon emissions region, this may take a moment...")
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
     all_geoms = []
@@ -61,8 +97,10 @@ def load_regions_with_bounding_boxes():
     #         geo = json.load(f)
     #         all_geoms.append(geo)
 
+    print("Turning json to shapes")
     for i, geom in enumerate(all_geoms):
         all_geoms[i]["geometry"] = shape(geom["geometry"])
+    print("Done!")
     return all_geoms
 
 REGIONS_WITH_BOUNDING_BOXES = load_regions_with_bounding_boxes()
