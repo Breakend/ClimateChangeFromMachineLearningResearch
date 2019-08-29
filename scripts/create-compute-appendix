@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+
+from __future__ import print_function
+import os
+import sys
+import argparse
+
+from pylatex import Document, Section, Subsection, Table, Math, TikZ, Axis, \
+    Plot, Figure, Package
+from pylatex.utils import italic, escape_latex
+
+from climate_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame 
+
+def main(arguments):
+
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('logdir', help="Input file", type=str)
+    args = parser.parse_args(arguments)
+
+    info = load_initial_info(args.logdir)
+
+    doc = Document()
+
+    with doc.create(Section('Device and Version Information')):
+        doc.append('CPU Info: ' + italic(info["cpu_info"]))
+        doc.append('GPU Info: ' + italic(",".join([x["name"] for x in info["gpu_info"]])))
+        doc.append('Climate Impact Tracker Version: ' + italic(info["climate_impact_tracker_version"]))
+        doc.append('Compute Region: ' + italic(info["region"]["id"]))
+        doc.append('Region Carbon Intensity Estimate (gCO2eq/kWh) : ' + italic(info["region_carbon_intensity_estimate"]["carbonIntensity"]))
+        doc.append('Region Carbon Intensity Estimate Data Source: ' + italic(info["region_carbon_intensity_estimate"]["source"]))
+        doc.append('Experiment Start Time: ' + italic(info["experiment_start"]))
+
+    doc.generate_tex(os.path.join(args.logdir, 'impact_appendix.tex'))
+
+    #TODO: integrate over data to get length of experiment, total power, energy usage estimates, cpu time, gpu time (estimate), carbon impact, etc.
+    df = load_data_into_frame(args.logdir)
+
+    # integrate power
+    # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
+    # multiply by carbon intensity to get Kg Carbon eq
+    DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization"]
+    kwh_rapl_cpu_and_dram =  
+    
+
+    # log average gpu/cpu usage
+    # log cpu/gpu hours
+    # can we also get energy in joules?
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))
+

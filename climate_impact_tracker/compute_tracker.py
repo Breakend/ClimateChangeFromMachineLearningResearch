@@ -7,6 +7,8 @@ import time
 import subprocess
 import pandas as pd
 import threading
+import time
+_timer = getattr(time, 'monotonic', time.time)
 
 from datetime import datetime
 
@@ -25,7 +27,7 @@ import csv
 
 DATAPATH = 'impacttracker/data.csv'
 INFOPATH = 'impacttracker/info.pkl'
-DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time", "average_gpu_estimated_utilization", "average_cpu_utilization"]
+DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization"]
 SLEEP_TIME = 1
 PUE = 1.58 
 
@@ -90,11 +92,26 @@ def get_rapl_power(pid_list):
         for d in diff.domains:
             domain = diff.domains[d]
             power = diff.average_power(package=domain.name)
+            # this should get the power per package (e.g., total rapl power)
+            # see images/power-planes.png for example
+            # Downloaded from: https://blog.chih.me/images/power-planes.jpg
+            #  Recent (Sandy Bridge and later) Intel processors that implement the RAPL (Running Average Power Limit) 
+            # interface that provides MSRs containing energy consumption estimates for up to four power planes or 
+            # domains of a machine, as seen in the diagram above.
+            # PKG: The entire package.
+            # PP0: The cores.
+            # PP1: An uncore device, usually the GPU (not available on all processor models.)
+            # DRAM: main memory (not available on all processor models.)
+            # The following relationship holds: PP0 + PP1 <= PKG. DRAM is independent of the other three domains.
+            # Most processors come in two packages so top level domains shold be package-1 and package-0
+            if "package" not in domain.name:
+                raise ValueError("Unexpected top level domain for RAPL package. Not yet supported.")
+
             total_intel_power += power
+
             for sd in domain.subdomains:
                 subdomain = domain.subdomains[sd]
                 power = diff.average_power(package=domain.name, domain=subdomain.name)
-                print(subdomain)
                 subdomain = subdomain.name.lower()
                 if subdomain == "ram" or subdomain == "dram":
                     total_dram_power += power
@@ -102,6 +119,8 @@ def get_rapl_power(pid_list):
                     total_cpu_power += power
                 elif subdomain == "gpu":
                     total_gpu_power += power
+                # other domains get don't have relevant readouts to give power attribution, therefore
+                # will get assigned the same amount of credit as the CPU
 
         if total_gpu_power != 0:
             raise ValueError("Don't support credit assignment to Intel RAPL GPU yet.")
@@ -110,21 +129,47 @@ def get_rapl_power(pid_list):
         cpu_times = 0
         mem_infos = []
         for process in pid_list:
-            p = psutil.Process(process)
-            cpu_percent += p.cpu_percent()
-            cpu_times += p.cpu_times().user + p.cpu_times().system
+            try:
+                p = psutil.Process(process)
+            except psutil.NoSuchProcess:
+                print("Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
+                continue
+            # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107 
+            # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
+            # power credits accordingly
+            st1 = _timer()
+            # units in terms of cpu-time, so we need the cpu in the last time period that are for the process only
+            system_wide_pt1 = psutil.cpu_times()
+            pt1 = p.cpu_times()
+            time.sleep(1)
+            st2 = _timer()
+            system_wide_pt2 = psutil.cpu_times()
+            pt2 = p.cpu_times()
+
+            # change in cpu-hours process
+            delta_proc = (pt2.user - pt1.user) + (pt2.system - pt1.system)
+            # change in cpu-hours system
+            delta_proc2 = (system_wide_pt2.user - system_wide_pt1.user) + (system_wide_pt2.system - system_wide_pt1.system)
+
+            # percent of cpu-hours in time frame attributable to this process (e.g., attributable compute)
+            attributable_compute = delta_proc / delta_proc2
+        
+            delta_time = st2 - st1
+            # TODO: do we really need to do anything with the time units?
+            cpu_percent += attributable_compute
+
+            # only care about cpu_times for latest number 
+            cpu_times += (pt2.user) + (pt2.system)
             mem_infos.append(p.memory_full_info())
 
-        system_wide_cpu_percent = psutil.cpu_percent()
+        system_wide_cpu_percent = psutil.cpu_percent(interval=1)
         # TODO: how can we get system wide memory usage
         total_physical_memory = psutil.virtual_memory()
         # what percentage of used memory can be attributed to this process
-        system_wide_mem_percent = (np.sum([x.rss for x in mem_infos]) / float(total_physical_memory.used)) * 100
-        print("Utilizing {} cpu percentage of a total system wide {} percent".format(cpu_percent, system_wide_cpu_percent))
-        print("Utilizing {} percent ram of the total used ram amount (rss-only)".format(system_wide_mem_percent))
+        system_wide_mem_percent = (np.sum([x.rss for x in mem_infos]) / float(total_physical_memory.used))
 
         power_credit_cpu = cpu_percent / system_wide_cpu_percent
-        power_credit_mem = system_wide_mem_percent / 100.0
+        power_credit_mem = system_wide_mem_percent 
 
         total_power = 0
         if total_cpu_power != 0:
@@ -192,7 +237,6 @@ def get_nvidia_gpu_power(pid_list):
 
         # processes
         processes = gpu.findall('processes')[0]
-        print(processes)
 
         infos = []
         # all the info for processes on this particular gpu that we're on
@@ -218,18 +262,8 @@ def get_nvidia_gpu_power(pid_list):
                 'sm_relative_percent' :sm_relative_percent,
                 'sm_absolute_percent' : sm_absolute_percent
             })
-            print(power_draw)
-            print(float(str(power_draw.replace("W", ""))))
-            print("POWERRRRR")
-            print(sm_relative_percent)
-            print(sm_absolute_percent)
-            print(pid)
-            print(pid_list)
-            print(gpu_based_processes)
-            print(gpu_based_processes[gpu_based_processes['pid'] == pid])
 
             if int(pid) in pid_list:
-                print("TRUEEE")
                 power += sm_relative_percent * float(power_draw.replace("W", ""))
                 per_gpu_absolute_percent_usage[gpu_id] += sm_absolute_percent
 
@@ -265,16 +299,12 @@ def _sample_and_log_power(log_dir):
     # First, try querying Intel's RAPL interface for dram at least
     rapl_power_draw, cpu_time, average_cpu_utilization = get_rapl_power(process_ids)
     nvidia_gpu_power_draw, per_gpu_absolute_percent_usage = get_nvidia_gpu_power(process_ids)
-    print("POWER DRAWWWW")
-    print(nvidia_gpu_power_draw)
     average_gpu_utilization = np.mean(list(per_gpu_absolute_percent_usage.values()))
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     data = [timestamp, rapl_power_draw, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_cpu_utilization]
     write_csv_data_to_file(log_path, data)
-    print("SHOULD DO DATA")
-    print(data)
 
 @processify
 def launch_power_monitor(queue, log_dir):
@@ -319,6 +349,16 @@ def gather_initial_info(log_dir):
     write_csv_data_to_file(data_path, DATA_HEADERS, overwrite=True) 
 
     print("Done initial setup of power monitor")
+
+def load_initial_info(log_dir):
+    info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
+    with open(info_path, 'rb') as info_file:
+        return pickle.load(info_file)
+
+def load_data_into_frame(log_dir):
+    data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
+    return pd.read_csv(data_path)
+    
 
 
 class ImpactTracker(object):

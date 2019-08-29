@@ -26,7 +26,8 @@ setup(name='climate_impact_tracker',
           'numpy',
           'pandas',
           'matplotlib',
-          'py-cpuinfo'
+          'py-cpuinfo',
+          'pylatex'
       ], 
       extras_require={
         'tests': [
