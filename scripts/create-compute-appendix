@@ -4,12 +4,13 @@ from __future__ import print_function
 import os
 import sys
 import argparse
-
+from datetime import datetime
+import numpy as np
 from pylatex import Document, Section, Subsection, Table, Math, TikZ, Axis, \
-    Plot, Figure, Package
-from pylatex.utils import italic, escape_latex
+    Plot, Figure, Package, LineBreak
+from pylatex.utils import escape_latex
 
-from climate_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame 
+from climate_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame, PUE
 
 def main(arguments):
 
@@ -24,25 +25,48 @@ def main(arguments):
     doc = Document()
 
     with doc.create(Section('Device and Version Information')):
-        doc.append('CPU Info: ' + italic(info["cpu_info"]))
-        doc.append('GPU Info: ' + italic(",".join([x["name"] for x in info["gpu_info"]])))
-        doc.append('Climate Impact Tracker Version: ' + italic(info["climate_impact_tracker_version"]))
-        doc.append('Compute Region: ' + italic(info["region"]["id"]))
-        doc.append('Region Carbon Intensity Estimate (gCO2eq/kWh) : ' + italic(info["region_carbon_intensity_estimate"]["carbonIntensity"]))
-        doc.append('Region Carbon Intensity Estimate Data Source: ' + italic(info["region_carbon_intensity_estimate"]["source"]))
-        doc.append('Experiment Start Time: ' + italic(info["experiment_start"]))
+        with doc.create(Subsection('CPU Information')):
+            doc.append('Brand: ' + str(info["cpu_info"]["brand"]))
+            doc.append(LineBreak())
+            doc.append('Hz (Actual): ' + (str(info["cpu_info"]["hz_actual"])))
+        with doc.create(Subsection('GPU Information')):
+            doc.append('GPU Info: ' + (",".join([x["name"] for x in info["gpu_info"]])))
+            # TODO: more gpu info
+        with doc.create(Subsection('Carbon Estimation Information')):
+            doc.append('Climate Impact Tracker Version: ' + (info["climate_impact_tracker_version"]))
+            doc.append(LineBreak())
+            doc.append('Compute Region: ' + (info["region"]["id"]))
+            doc.append(LineBreak())
+            doc.append('Region Carbon Intensity Estimate (gCO2eq/kWh) : ' + str(info["region_carbon_intensity_estimate"]["carbonIntensity"]))        
+            doc.append(LineBreak())
+            doc.append('Region Carbon Intensity Estimate Data Source: ' + str(info["region_carbon_intensity_estimate"]["_source"]))
 
-    doc.generate_tex(os.path.join(args.logdir, 'impact_appendix.tex'))
+    with doc.create(Section('Experiment Info')):
+        doc.append('Experiment Start Time: ' + str(datetime.timestamp(info["experiment_start"])))
+        doc.append(LineBreak())
+        df = load_data_into_frame(args.logdir)
 
-    #TODO: integrate over data to get length of experiment, total power, energy usage estimates, cpu time, gpu time (estimate), carbon impact, etc.
-    df = load_data_into_frame(args.logdir)
-
-    # integrate power
-    # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
-    # multiply by carbon intensity to get Kg Carbon eq
-    DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization"]
-    kwh_rapl_cpu_and_dram =  
-    
+        # integrate power
+        # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
+        # multiply by carbon intensity to get Kg Carbon eq
+        time_differences = df["timestamp"].diff()
+        time_differences[0] = df["timestamp"][0] - datetime.timestamp(info["experiment_start"])
+        kw_hr_rapl = np.multiply(time_differences/3600., df["rapl_estimated_attributable_power_draw"]).sum() #elementwise multiplication and sum
+        kw_hr_nvidia = np.multiply(time_differences/3600., df["nvidia_estimated_attributable_power_draw"]).sum() #elementwise multiplication and sum
+        total_power = PUE*(kw_hr_nvidia + kw_hr_rapl)
+        doc.append('Intel (CPU+DRAM, RAPL) Power Usage (kWh): ' + str(kw_hr_rapl))
+        doc.append(LineBreak())
+        doc.append('NVIDIA (GPU) Power Usage (kWh): ' + str(kw_hr_nvidia))
+        doc.append(LineBreak())
+        doc.append('Assumed PUE: ' + str(PUE))
+        doc.append(LineBreak())
+        doc.append('Total Power (PUE * (Intel Power + NVIDIA Power)): ' + str(total_power))
+        doc.append(LineBreak())
+        doc.append('Carbon Impact (carbon intensity * total power, KgCO2eq): ' + str(total_power * info["region_carbon_intensity_estimate"]["carbonIntensity"] / 1000.0))
+        doc.append(LineBreak())
+        doc.append('CPU-Hours: ' + str(df['cpu_time_seconds'].iloc[-1]/3600.))
+    doc.generate_tex(os.path.join(args.logdir, 'impact_appendix'))
+    doc.generate_pdf(os.path.join(args.logdir, 'impact_appendix'))
 
     # log average gpu/cpu usage
     # log cpu/gpu hours
