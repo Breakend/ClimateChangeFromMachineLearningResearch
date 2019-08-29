@@ -39,7 +39,8 @@ setup(name='climate_impact_tracker',
         'docs': [
             'sphinx',
             'sphinx-autobuild',
-            'sphinx-rtd-theme'
+            'sphinx-rtd-theme',
+            'recommonmark'
         ]
       },
       description='A toolkit for easy evaluation of Deep RL algorithms.',

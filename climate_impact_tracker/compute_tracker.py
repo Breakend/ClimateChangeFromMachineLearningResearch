@@ -8,6 +8,7 @@ import subprocess
 import pandas as pd
 import threading
 import time
+import logging
 _timer = getattr(time, 'monotonic', time.time)
 
 from datetime import datetime
@@ -27,7 +28,7 @@ import csv
 
 DATAPATH = 'impacttracker/data.csv'
 INFOPATH = 'impacttracker/info.pkl'
-DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization"]
+DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization", "absolute_cpu_utilization"]
 SLEEP_TIME = 1
 PUE = 1.58 
 
@@ -80,7 +81,7 @@ def write_csv_data_to_file(file_path, data, overwrite=False):
         writer = csv.writer(outfile)
         writer.writerow(data)
 
-def get_rapl_power(pid_list):
+def get_rapl_power(pid_list, logger=None):
         s1 = rapl.RAPLMonitor.sample()
         time.sleep(3)
         s2 = rapl.RAPLMonitor.sample()
@@ -126,13 +127,15 @@ def get_rapl_power(pid_list):
             raise ValueError("Don't support credit assignment to Intel RAPL GPU yet.")
 
         cpu_percent = 0
+        absolute_cpu_percent = 0
         cpu_times = 0
         mem_infos = []
         for process in pid_list:
             try:
                 p = psutil.Process(process)
             except psutil.NoSuchProcess:
-                print("Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
+                if logger is not None:
+                    self.logger.warn("Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
                 continue
             # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107 
             # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
@@ -152,9 +155,16 @@ def get_rapl_power(pid_list):
             delta_proc2 = (system_wide_pt2.user - system_wide_pt1.user) + (system_wide_pt2.system - system_wide_pt1.system)
 
             # percent of cpu-hours in time frame attributable to this process (e.g., attributable compute)
-            attributable_compute = delta_proc / delta_proc2
+            attributable_compute = delta_proc / float(delta_proc2)
         
             delta_time = st2 - st1
+
+            # cpu-seconds / seconds = cpu util 
+            # NOTE: WE DO NOT MULTIPLY BY THE NUMBER OF CORES LIKE HTOP, WE WANT 100% to be the max
+            # since we want a percentage of the total packages. 
+            # TODO: I'm not sure if this will get that in all configurations of hardware.
+            absolute_cpu_percent += delta_proc / float(delta_time)
+
             # TODO: do we really need to do anything with the time units?
             cpu_percent += attributable_compute
 
@@ -180,9 +190,9 @@ def get_rapl_power(pid_list):
          # assign the rest of the power to the CPU percentage even if this is a bit innacurate
         total_power += (total_intel_power - total_dram_power - total_cpu_power) * power_credit_cpu
 
-        return total_intel_power, cpu_times, cpu_percent
+        return total_intel_power, cpu_times, cpu_percent, absolute_cpu_percent
 
-def get_nvidia_gpu_power(pid_list):
+def get_nvidia_gpu_power(pid_list, logger=None):
     # Find per process per gpu usage info
     sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out_str = sp.communicate()
@@ -292,22 +302,22 @@ def read_latest_stats(log_dir):
         return None
 
 
-def _sample_and_log_power(log_dir):
+def _sample_and_log_power(log_dir, logger=None):
     current_process =  psutil.Process(os.getppid())
     process_ids = [current_process.pid] + [child.pid for child in current_process.children(recursive=True) ]
 
     # First, try querying Intel's RAPL interface for dram at least
-    rapl_power_draw, cpu_time, average_cpu_utilization = get_rapl_power(process_ids)
-    nvidia_gpu_power_draw, per_gpu_absolute_percent_usage = get_nvidia_gpu_power(process_ids)
+    rapl_power_draw, cpu_time, average_cpu_utilization, absolute_cpu_utilization = get_rapl_power(process_ids, logger=logger)
+    nvidia_gpu_power_draw, per_gpu_absolute_percent_usage = get_nvidia_gpu_power(process_ids, logger=logger)
     average_gpu_utilization = np.mean(list(per_gpu_absolute_percent_usage.values()))
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    data = [timestamp, rapl_power_draw, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_cpu_utilization]
+    data = [timestamp, rapl_power_draw, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_cpu_utilization, absolute_cpu_utilization]
     write_csv_data_to_file(log_path, data)
 
 @processify
-def launch_power_monitor(queue, log_dir):
+def launch_power_monitor(queue, log_dir, logger=None):
     print("Starting process to monitor power")
     while True:
         try:
@@ -319,7 +329,13 @@ def launch_power_monitor(queue, log_dir):
         except EmptyQueueException:
             pass
 
-        _sample_and_log_power(log_dir)
+        try:
+            _sample_and_log_power(log_dir, logger)
+        except:
+            ex_type, ex_value, tb = sys.exc_info()
+            logger.error("Encountered exception within power monitor thread!")
+            logger.error(ex_type, ex_value, ''.join(traceback.format_tb(tb)))
+            raise 
         time.sleep(SLEEP_TIME)
    
 
@@ -365,11 +381,40 @@ class ImpactTracker(object):
 
     def __init__(self, logdir):
         self.logdir = logdir
+        self._setup_logging()
         gather_initial_info(logdir)
 
+
+    def _setup_logging(self):
+        # Create a custom logger
+        logger = logging.getLogger(self.__name__)
+
+        # Create handlers
+        c_handler = logging.StreamHandler()
+        f_handler = logging.FileHandler(safe_file_path(os.path.join(self.logdir, 'log.log')))
+        c_handler.setLevel(logging.WARNING)
+        f_handler.setLevel(logging.ERROR)
+
+        # Create formatters and add it to handlers
+        c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+        f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        c_handler.setFormatter(c_format)
+        f_handler.setFormatter(f_format)
+
+        # Add handlers to the logger
+        logger.addHandler(c_handler)
+        logger.addHandler(f_handler)
+        self.logger = logger
+
     def launch_impact_monitor(self):
-        self.p, self.queue = launch_power_monitor(self.logdir)
-        atexit.register(lambda p: p.terminate(), self.p)
+        try:
+            self.p, self.queue = launch_power_monitor(self.logdir, self.logger)
+            atexit.register(lambda p: p.terminate(), self.p)
+        except:
+            ex_type, ex_value, tb = sys.exc_info()
+            self.logger.error("Encountered exception when launching power monitor thread.")
+            self.logger.error(ex_type, ex_value, ''.join(traceback.format_tb(tb)))
+            raise 
 
     def get_latest_info_and_check_for_errors(self):
         try:
