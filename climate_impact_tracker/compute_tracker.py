@@ -26,9 +26,10 @@ from queue import Empty as EmptyQueueException
 import csv
 
 
-DATAPATH = 'impacttracker/data.csv'
-INFOPATH = 'impacttracker/info.pkl'
-DATA_HEADERS = ["timestamp","rapl_estimated_attributable_power_draw", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization", "average_relative_cpu_utilization", "absolute_cpu_utilization"]
+BASE_LOG_PATH = 'impacttracker/'
+DATAPATH = BASE_LOG_PATH + 'data.csv'
+INFOPATH = BASE_LOG_PATH + 'info.pkl'
+DATA_HEADERS = ["timestamp","rapl_power_draw_absolute", "rapl_estimated_attributable_power_draw", "nvidia_draw_absolute", "nvidia_estimated_attributable_power_draw", "cpu_time_seconds", "average_gpu_estimated_utilization_absolute", "average_gpu_estimated_utilization_relative", "average_relative_cpu_utilization", "absolute_cpu_utilization", "per_gpu_performance_state"]
 SLEEP_TIME = 1
 PUE = 1.58 
 
@@ -135,7 +136,7 @@ def get_rapl_power(pid_list, logger=None):
                 p = psutil.Process(process)
             except psutil.NoSuchProcess:
                 if logger is not None:
-                    self.logger.warn("Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
+                    logger.warn("Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
                 continue
             # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107 
             # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
@@ -178,19 +179,19 @@ def get_rapl_power(pid_list, logger=None):
         # what percentage of used memory can be attributed to this process
         system_wide_mem_percent = (np.sum([x.rss for x in mem_infos]) / float(total_physical_memory.used))
 
-        power_credit_cpu = cpu_percent / system_wide_cpu_percent
+        power_credit_cpu = cpu_percent #/ system_wide_cpu_percent
         power_credit_mem = system_wide_mem_percent 
 
-        total_power = 0
+        total_attributable_power = 0
         if total_cpu_power != 0:
-            total_power += total_cpu_power * power_credit_cpu
+            total_attributable_power += total_cpu_power * power_credit_cpu
         if total_dram_power != 0:
-            total_power += total_dram_power * power_credit_mem
+            total_attributable_power += total_dram_power * power_credit_mem
 
          # assign the rest of the power to the CPU percentage even if this is a bit innacurate
-        total_power += (total_intel_power - total_dram_power - total_cpu_power) * power_credit_cpu
+        total_attributable_power += (total_intel_power - total_dram_power - total_cpu_power) * power_credit_cpu
 
-        return total_intel_power, cpu_times, cpu_percent, absolute_cpu_percent
+        return total_intel_power, total_attributable_power, cpu_times, cpu_percent, absolute_cpu_percent
 
 def get_nvidia_gpu_power(pid_list, logger=None):
     # Find per process per gpu usage info
@@ -210,6 +211,9 @@ def get_nvidia_gpu_power(pid_list, logger=None):
     results = []
     power = 0
     per_gpu_absolute_percent_usage = {}
+    per_gpu_relative_percent_usage  = {}
+    absolute_power = 0
+    per_gpu_performance_states = {}
 
     for gpu_id, gpu in enumerate(xml.findall('gpu')):
         gpu_data = {}
@@ -237,6 +241,10 @@ def get_nvidia_gpu_power(pid_list, logger=None):
             'memory_util': memory_util
         }
 
+        # get performance state
+        performance_state = gpu.findall('performance_state')[0].text
+        per_gpu_performance_states[gpu_id] = performance_state
+
         # get power
         power_readings = gpu.findall('power_readings')[0]
         power_draw = power_readings.findall('power_draw')[0].text
@@ -244,6 +252,7 @@ def get_nvidia_gpu_power(pid_list, logger=None):
         gpu_data['power_readings'] = {
             'power_draw' : power_draw
         }
+        absolute_power += float(power_draw.replace("W", ""))
 
         # processes
         processes = gpu.findall('processes')[0]
@@ -255,6 +264,7 @@ def get_nvidia_gpu_power(pid_list, logger=None):
         percentage_of_gpu_used_by_all_processes = float(gpu_based_processes['sm'].sum())
        
         per_gpu_absolute_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
+        per_gpu_relative_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
         for info in processes.findall('process_info'):
             pid = info.findall('pid')[0].text
             process_name = info.findall('process_name')[0].text
@@ -275,13 +285,15 @@ def get_nvidia_gpu_power(pid_list, logger=None):
 
             if int(pid) in pid_list:
                 power += sm_relative_percent * float(power_draw.replace("W", ""))
-                per_gpu_absolute_percent_usage[gpu_id] += sm_absolute_percent
+                per_gpu_absolute_percent_usage[gpu_id] += (sm_absolute_percent / 100.0) # want a proportion value rather than percentage
+                per_gpu_relative_percent_usage[gpu_id] += sm_relative_percent
 
         gpu_data['processes'] = infos
 
         results.append(gpu_data)
+        
 
-    return power, per_gpu_absolute_percent_usage
+    return absolute_power, power, per_gpu_absolute_percent_usage, per_gpu_relative_percent_usage, per_gpu_performance_states
 
 # def _calculate_carbon_impact():
     # TODO: carbon impact formula here based on estimated power attribution for gpu and cpu
@@ -301,24 +313,27 @@ def read_latest_stats(log_dir):
     else:
         return None
 
+def _stringify_performance_states(state_dict):
+    return "|".join("::".join(map(lambda x: str(x), z)) for z in state_dict.items())
 
 def _sample_and_log_power(log_dir, logger=None):
     current_process =  psutil.Process(os.getppid())
     process_ids = [current_process.pid] + [child.pid for child in current_process.children(recursive=True) ]
 
     # First, try querying Intel's RAPL interface for dram at least
-    rapl_power_draw, cpu_time, average_cpu_utilization, absolute_cpu_utilization = get_rapl_power(process_ids, logger=logger)
-    nvidia_gpu_power_draw, per_gpu_absolute_percent_usage = get_nvidia_gpu_power(process_ids, logger=logger)
+    rapl_power_draw_absolute, rapl_draw_attributable, cpu_time, average_cpu_utilization, absolute_cpu_utilization = get_rapl_power(process_ids, logger=logger)
+    nvidia_power_draw_absolute, nvidia_gpu_power_draw, per_gpu_absolute_percent_usage, per_gpu_relative_percent_usage, per_gpu_performance_states = get_nvidia_gpu_power(process_ids, logger=logger)
     average_gpu_utilization = np.mean(list(per_gpu_absolute_percent_usage.values()))
+    average_gpu_relative_utilization = np.mean(list(per_gpu_relative_percent_usage.values()))
     now = datetime.now()
     timestamp = datetime.timestamp(now)
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    data = [timestamp, rapl_power_draw, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_cpu_utilization, absolute_cpu_utilization]
+    data = [timestamp, rapl_power_draw_absolute, rapl_draw_attributable, nvidia_power_draw_absolute, nvidia_gpu_power_draw, cpu_time, average_gpu_utilization, average_gpu_relative_utilization, average_cpu_utilization, absolute_cpu_utilization, _stringify_performance_states(per_gpu_performance_states)]
     write_csv_data_to_file(log_path, data)
 
 @processify
 def launch_power_monitor(queue, log_dir, logger=None):
-    print("Starting process to monitor power")
+    logger.warn("Starting process to monitor power")
     while True:
         try:
             message = queue.get(block=False)
@@ -334,7 +349,7 @@ def launch_power_monitor(queue, log_dir, logger=None):
         except:
             ex_type, ex_value, tb = sys.exc_info()
             logger.error("Encountered exception within power monitor thread!")
-            logger.error(ex_type, ex_value, ''.join(traceback.format_tb(tb)))
+            logger.error(''.join(traceback.format_tb(tb)))
             raise 
         time.sleep(SLEEP_TIME)
    
@@ -364,7 +379,6 @@ def gather_initial_info(log_dir):
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     write_csv_data_to_file(data_path, DATA_HEADERS, overwrite=True) 
 
-    print("Done initial setup of power monitor")
 
 def load_initial_info(log_dir):
     info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
@@ -382,16 +396,18 @@ class ImpactTracker(object):
     def __init__(self, logdir):
         self.logdir = logdir
         self._setup_logging()
+        self.logger.warn("Gathering system info for reproducibility...")
         gather_initial_info(logdir)
+        self.logger.warn("Done initial setup and information gathering...")
 
 
     def _setup_logging(self):
         # Create a custom logger
-        logger = logging.getLogger(self.__name__)
+        logger = logging.getLogger("climate_impact_tracker.compute_tracker.ImpactTracker")
 
         # Create handlers
         c_handler = logging.StreamHandler()
-        f_handler = logging.FileHandler(safe_file_path(os.path.join(self.logdir, 'log.log')))
+        f_handler = logging.FileHandler(safe_file_path(os.path.join(self.logdir, 'impact_tracker_log.log')))
         c_handler.setLevel(logging.WARNING)
         f_handler.setLevel(logging.ERROR)
 
