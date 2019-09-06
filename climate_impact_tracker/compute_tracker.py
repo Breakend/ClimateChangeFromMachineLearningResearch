@@ -33,6 +33,13 @@ DATA_HEADERS = ["timestamp","rapl_power_draw_absolute", "rapl_estimated_attribut
 SLEEP_TIME = 1
 PUE = 1.58 
 
+def get_flop_count_tensorflow(graph=None):
+    import tensorflow as tf # import within function so as not to require tf for package
+    from tensorflow.python.framework import graph_util
+    if graph is None:
+        graph = tf.get_default_graph()
+    flops = tf.profiler.profile(graph, options = tf.profiler.ProfileOptionBuilder.float_operation())
+    return flops.total_float_ops
 
 def processify(func):
     '''Decorator to run a function as a process.
@@ -407,7 +414,7 @@ class ImpactTracker(object):
 
         # Create handlers
         c_handler = logging.StreamHandler()
-        f_handler = logging.FileHandler(safe_file_path(os.path.join(self.logdir, 'impact_tracker_log.log')))
+        f_handler = logging.FileHandler(safe_file_path(os.path.join(self.logdir, BASE_LOG_PATH, 'impact_tracker_log.log')))
         c_handler.setLevel(logging.WARNING)
         f_handler.setLevel(logging.ERROR)
 
