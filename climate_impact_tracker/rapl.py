@@ -20,6 +20,8 @@ def _get_domain_info(path):
     return name, energy_uj, max_energy_range_uj
 
 def _walk_rapl_dir(path):
+    if not os.path.exists(path):
+        raise ValueError("No RAPL directory exists to read from, RAPL CPU power readings may not be supported on this machine. If you discover a way to read rapl readings, please submit a pull request to update compatibility for your system!")
     regex = re.compile("intel-rapl")
 
     for dirpath, dirnames, filenames in os.walk(path, topdown=True):        

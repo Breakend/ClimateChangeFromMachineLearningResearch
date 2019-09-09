@@ -24,6 +24,8 @@ from .processor_info import get_my_cpu_info, get_gpu_info
 from multiprocessing import Process, Queue
 from queue import Empty as EmptyQueueException
 import csv
+from collections import OrderedDict
+
 
 
 BASE_LOG_PATH = 'impacttracker/'
@@ -33,12 +35,23 @@ DATA_HEADERS = ["timestamp","rapl_power_draw_absolute", "rapl_estimated_attribut
 SLEEP_TIME = 1
 PUE = 1.58 
 
-def get_flop_count_tensorflow(graph=None):
+def get_flop_count_tensorflow(graph=None, freeze_graph=False, name_spaces=[]):
     import tensorflow as tf # import within function so as not to require tf for package
     from tensorflow.python.framework import graph_util
     if graph is None:
         graph = tf.get_default_graph()
-    flops = tf.profiler.profile(graph, options = tf.profiler.ProfileOptionBuilder.float_operation())
+
+    if freeze_graph:
+        with tf.Session() as sess:
+            output_graph_def = graph_util.convert_variables_to_constants(sess, graph.as_graph_def(), name_spaces)
+            with tf.gfile.GFile('/tmp/tmp_flop_count_graph.pb', "wb") as f:
+                f.write(output_graph_def.SerializeToString())
+            g2 = load_pb('./graph.pb')
+            with g2.as_default():
+                flops = tf.profiler.profile(g2, options = tf.profiler.ProfileOptionBuilder.float_operation())
+
+    else:
+        flops = tf.profiler.profile(graph, options = tf.profiler.ProfileOptionBuilder.float_operation())
     return flops.total_float_ops
 
 def processify(func):
@@ -188,6 +201,10 @@ def get_rapl_power(pid_list, logger=None):
 
         power_credit_cpu = cpu_percent #/ system_wide_cpu_percent
         power_credit_mem = system_wide_mem_percent 
+        if power_credit_cpu == 0:
+            raise ValueError("Problem retrieving CPU usage percentage to assign power credit")
+        if power_credit_mem == 0:
+            raise ValueError("Problem retrieving Mem usage percentage to assign power credit")
 
         total_attributable_power = 0
         if total_cpu_power != 0:
@@ -198,6 +215,9 @@ def get_rapl_power(pid_list, logger=None):
          # assign the rest of the power to the CPU percentage even if this is a bit innacurate
         total_attributable_power += (total_intel_power - total_dram_power - total_cpu_power) * power_credit_cpu
 
+        if total_intel_power == 0:
+            raise ValueError("It seems that power estimates from Intel RAPL are coming back 0, this indicates a problem.")
+
         return total_intel_power, total_attributable_power, cpu_times, cpu_percent, absolute_cpu_percent
 
 def get_nvidia_gpu_power(pid_list, logger=None):
@@ -205,6 +225,9 @@ def get_nvidia_gpu_power(pid_list, logger=None):
     sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '10'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out_str = sp.communicate()
     out_str_split = out_str[0].decode('utf-8').split('\n')
+    # sometimes with too many processess on the machine or too many gpus, this command will reprint the headers
+    # to avoid that we just remove duplicate lines
+    out_str_split = list(OrderedDict.fromkeys(out_str_split))
     out_str_pruned = [out_str_split[0],] + out_str_split[2:]
     out_str_final = "\n".join(out_str_pruned)
     out_str_final = out_str_final.replace("-","0")
@@ -248,10 +271,6 @@ def get_nvidia_gpu_power(pid_list, logger=None):
             'memory_util': memory_util
         }
 
-        # get performance state
-        performance_state = gpu.findall('performance_state')[0].text
-        per_gpu_performance_states[gpu_id] = performance_state
-
         # get power
         power_readings = gpu.findall('power_readings')[0]
         power_draw = power_readings.findall('power_draw')[0].text
@@ -270,8 +289,6 @@ def get_nvidia_gpu_power(pid_list, logger=None):
         # what's the total absolute SM for this gpu across all accessible processes 
         percentage_of_gpu_used_by_all_processes = float(gpu_based_processes['sm'].sum())
        
-        per_gpu_absolute_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
-        per_gpu_relative_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
         for info in processes.findall('process_info'):
             pid = info.findall('pid')[0].text
             process_name = info.findall('process_name')[0].text
@@ -291,6 +308,19 @@ def get_nvidia_gpu_power(pid_list, logger=None):
             })
 
             if int(pid) in pid_list:
+                # only add a gpu to the list if it's being used by one of the processes. sometimes nvidia-smi seems to list all gpus available 
+                # even if they're not being used by our application, this is a problem in a slurm setting
+                if gpu_id not in per_gpu_absolute_percent_usage:
+                    per_gpu_absolute_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
+                if gpu_id not in per_gpu_relative_percent_usage:
+                     per_gpu_relative_percent_usage[gpu_id] = 0 #percentage_of_gpu_used_by_all_processes 
+
+                if gpu_id not in per_gpu_performance_states:
+                    # we only log information for gpus that we're using, we've noticed that nvidia-smi will sometimes return information
+                    # about all gpu's on a slurm cluster even if they're not assigned to a worker 
+                    performance_state = gpu.findall('performance_state')[0].text
+                    per_gpu_performance_states[gpu_id] = performance_state
+
                 power += sm_relative_percent * float(power_draw.replace("W", ""))
                 per_gpu_absolute_percent_usage[gpu_id] += (sm_absolute_percent / 100.0) # want a proportion value rather than percentage
                 per_gpu_relative_percent_usage[gpu_id] += sm_relative_percent
@@ -453,4 +483,6 @@ class ImpactTracker(object):
         except EmptyQueueException:
             # Nothing in the message queue
             pass
+        # TODO: make thread safe read/writes via multiprocessing lock. 
+        # There might be a case where we try to read a file that is currently being written to? possibly
         return read_latest_stats(self.logdir)
