@@ -11,9 +11,6 @@ import numpy as np
 import pandas as pd
 
 import psutil
-from experiment_impact_tracker.cpu import rapl, get_rapl_power
-
-from experiment_impact_tracker.processor_info import get_gpu_info, get_my_cpu_info
 
 _timer = getattr(time, 'monotonic', time.time)
 

@@ -22,6 +22,7 @@ import pandas as pd
 
 import psutil
 from experiment_impact_tracker.cpu.intel import get_rapl_power
+from experiment_impact_tracker.cpu import rapl
 
 from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
 from experiment_impact_tracker.processor_info import get_gpu_info, get_my_cpu_info
@@ -165,10 +166,10 @@ def _sample_and_log_power(log_dir, logger=None):
 
         if isinstance(results, dict):
             # if we return a dict of results, could account for multiple headers
-            for header_name, item in results:
-                header_information[header] = item
+            for header_name, item in results.items():
+                header_information[header_name] = item
         else:
-            header_information[header] = results
+            header_information[header["name"]] = results
 
     # once we have gotten all the required info through routing calls for all headers, we log it
     data = [header_information[x["name"]] for x in required_headers]
@@ -204,43 +205,53 @@ def launch_power_monitor(queue, log_dir, logger=None):
 def _is_nvidia_compatible():
     from shutil import which
 
-    return which("nvidia-smi") is not None
+    if which("nvidia-smi") is None:
+        return False
+
+    # make sure that nvidia-smi doesn't just return no devices
+    p = Popen(['nvidia-smi'], stdout=PIPE)
+    stdout, stderror = p.communicate()
+    output = stdout.decode('UTF-8') 
+    if "no devices" in output.lower():
+        return False
+
+    return True
 
 
 def _get_compatibilities(required_elements=[]):
-    if not (platform == "linux" and platform == "linux2"):
+    if not (platform == "linux" or platform == "linux2"):
         raise NotImplementedError(
             "Do not currently support systems outside of linux. Sorry! Please feel free to send a pull request for compatibility.")
 
-    compatabilities = ["all"]
+    compatibilities = ["all"]
 
     if rapl._is_rapl_compatible():
-        compatabilities.append("rapl")
-        compatabilities.append("cpu")
+        compatibilities.append("rapl")
+        compatibilities.append("cpu")
 
     if _is_nvidia_compatible():
-        compatabilities.append("nvidia")
-        compatabilities.append("gpu")
+        compatibilities.append("nvidia")
+        compatibilities.append("gpu")
 
-    if "cpu" not in compatabilities:
+    if "cpu" not in compatibilities:
         raise ValueError(
             "Looks like there's no current method to gather cpu information. At minimum we require this for informative logging.")
 
     for element in required_elements:
-        if element not in compatabilities:
+        if element not in compatibilities:
             raise ValueError(
                 "Looks like there's a requirement to log {}, but didn't find a method to do this. Please add a pull request if you'd like that information on your system!")
 
-    return compatabilities
+    return compatibilities
 
 
 def _get_compatible_data_headers(compatibilities):
     compatible_headers = []
 
     for header in DATA_HEADERS:
-        if not set(compatabilities).isdisjoint(header["compatability"])
-        # has shared element
-        compatible_headers.append(header)
+        if not set(compatibilities).isdisjoint(header["compatability"]):
+            # has shared element
+            compatible_headers.append(header)
     return compatible_headers
 
 
