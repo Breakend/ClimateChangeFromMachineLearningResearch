@@ -1,6 +1,6 @@
 # Code in file tensor/two_layer_net_tensor.py
 import torch
-from climate_impact_tracker.compute_tracker import ImpactTracker
+from experiment_impact_tracker.compute_tracker import ImpactTracker
 
 tracker = ImpactTracker('./testlogs/')
 

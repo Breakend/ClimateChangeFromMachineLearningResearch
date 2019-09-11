@@ -1,7 +1,7 @@
 import shutil, tempfile
 from os import path
 import unittest
-from climate_impact_tracker.get_region_metrics import get_current_region
+from experiment_impact_tracker.get_region_metrics import get_current_region
 
 class TestRegionLookups(unittest.TestCase):
     def setUp(self):

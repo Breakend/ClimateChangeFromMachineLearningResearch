@@ -1,6 +1,6 @@
 import sys
 import argparse
-from climate_impact_tracker.get_region_metrics import get_current_region_info
+from experiment_impact_tracker.get_region_metrics import get_current_region_info
 def cmdline_args():
     # Make parser object
     p = argparse.ArgumentParser(description=

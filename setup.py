@@ -7,7 +7,7 @@ from distutils.version import LooseVersion
 from distutils.util import convert_path
 
 main_ns = {}
-ver_path = convert_path('climate_impact_tracker/version.py')
+ver_path = convert_path('experiment_impact_tracker/version.py')
 with open(ver_path) as ver_file:
     exec(ver_file.read(), main_ns)
 
@@ -15,7 +15,7 @@ if sys.version_info.major != 3:
     print('This Python is only compatible with Python 3, but you are running '
           'Python {}. The installation will likely fail.'.format(sys.version_info.major))
 
-setup(name='climate_impact_tracker',
+setup(name='experiment_impact_tracker',
       packages= find_packages(),
       install_requires=[
           'bs4',

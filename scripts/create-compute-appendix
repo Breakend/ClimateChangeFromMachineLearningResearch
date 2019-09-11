@@ -10,7 +10,7 @@ from pylatex import Document, Section, Subsection, Table, Tabular, Math, TikZ, A
     Plot, Figure, Package, LineBreak
 from pylatex.utils import escape_latex
 
-from climate_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame, PUE
+from experiment_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame, PUE
 
 def main(arguments):
 
@@ -38,7 +38,7 @@ def main(arguments):
         with doc.create(Subsection('Carbon Estimation Information')):
             with doc.create(Tabular('|r|c|')) as table:
                 table.add_hline()
-                table.add_row(['Climate Impact Tracker Version', info["climate_impact_tracker_version"]])
+                table.add_row(['Climate Impact Tracker Version', info["experiment_impact_tracker_version"]])
                 table.add_hline()
                 table.add_row(('Compute Region', info["region"]["id"]))
                 table.add_hline()

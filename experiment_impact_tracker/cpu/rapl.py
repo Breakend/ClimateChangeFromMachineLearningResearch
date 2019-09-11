@@ -7,28 +7,38 @@ UJOULES = 1
 JOULES = 2
 WATT_HOURS = 3
 
+
 def _read_sysfs_file(path):
     with open(path, "r") as f:
         contents = f.read().strip()
         return contents
 
+
 def _get_domain_info(path):
     name = _read_sysfs_file("%s/name" % path)
     energy_uj = int(_read_sysfs_file("%s/energy_uj" % path))
-    max_energy_range_uj = int(_read_sysfs_file("%s/max_energy_range_uj" % path))
+    max_energy_range_uj = int(_read_sysfs_file(
+        "%s/max_energy_range_uj" % path))
 
     return name, energy_uj, max_energy_range_uj
+
+
+def _is_rapl_compatible():
+    # TODO: for future methods can add an if-else statement here
+    return os.path.exists("/sys/class/powercap/intel-rapl")
+
 
 def _walk_rapl_dir(path):
     if not os.path.exists(path):
         raise ValueError("No RAPL directory exists to read from, RAPL CPU power readings may not be supported on this machine. If you discover a way to read rapl readings, please submit a pull request to update compatibility for your system!")
     regex = re.compile("intel-rapl")
 
-    for dirpath, dirnames, filenames in os.walk(path, topdown=True):        
+    for dirpath, dirnames, filenames in os.walk(path, topdown=True):
         for d in dirnames:
             if not regex.search(d):
                 dirnames.remove(d)
         yield dirpath, dirnames, filenames
+
 
 class RAPLDomain(object):
 
@@ -88,8 +98,9 @@ class RAPLDomain(object):
     def __repr__(self):
         return self.__str__()
 
+
 class RAPLSample(object):
-    
+
     @classmethod
     def take_sample(cls):
         sample = RAPLSample()
@@ -153,14 +164,13 @@ class RAPLSample(object):
         elif unit == WATT_HOURS:
             return e / (1000000*3600)
 
+
 class RAPLDifference(RAPLSample):
     def average_power(self, package, domain=None):
         return self.energy(package, domain, unit=JOULES) / self.duration
+
 
 class RAPLMonitor(object):
     @classmethod
     def sample(cls):
         return RAPLSample.take_sample()
-
-
-
