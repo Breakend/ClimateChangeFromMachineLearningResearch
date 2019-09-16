@@ -149,7 +149,7 @@ def get_nvidia_gpu_power(pid_list, logger=None):
         "nvidia_draw_absolute": absolute_power,
         "nvidia_estimated_attributable_power_draw": power,
         "average_gpu_estimated_utilization_absolute": average_gpu_utilization,
-        "average_gpu_relative_utilization": average_gpu_relative_utilization,
+        "average_gpu_estimated_utilization_relative": average_gpu_relative_utilization,
         "per_gpu_performance_state":  _stringify_performance_states(per_gpu_performance_states)
     }
 
