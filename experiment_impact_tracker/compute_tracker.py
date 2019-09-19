@@ -1,32 +1,26 @@
 import atexit
-import csv
 import logging
 import os
 import pickle
 import subprocess
 import sys
-import threading
 import time
 import traceback
-from collections import OrderedDict
 from datetime import datetime
-from functools import wraps
-from multiprocessing import Process, Queue
 from queue import Empty as EmptyQueueException
 from subprocess import PIPE, Popen
-from xml.etree.ElementTree import fromstring
-from sys import platform 
+from sys import platform
 
 import numpy as np
 import pandas as pd
 
 import psutil
-from experiment_impact_tracker.data_info_and_router import DATA_HEADERS
-from experiment_impact_tracker.cpu.intel import get_rapl_power
 from experiment_impact_tracker.cpu import rapl
-
-from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
-from experiment_impact_tracker.processor_info import get_gpu_info, get_my_cpu_info
+from experiment_impact_tracker.cpu.common import get_my_cpu_info
+from experiment_impact_tracker.cpu.intel import get_rapl_power
+from experiment_impact_tracker.data_info_and_router import DATA_HEADERS
+from experiment_impact_tracker.gpu.nvidia import (get_gpu_info,
+                                                  get_nvidia_gpu_power)
 from experiment_impact_tracker.utils import *
 
 BASE_LOG_PATH = 'impacttracker/'
@@ -115,7 +109,7 @@ def _is_nvidia_compatible():
     # make sure that nvidia-smi doesn't just return no devices
     p = Popen(['nvidia-smi'], stdout=PIPE)
     stdout, stderror = p.communicate()
-    output = stdout.decode('UTF-8') 
+    output = stdout.decode('UTF-8')
     if "no devices" in output.lower():
         return False
 

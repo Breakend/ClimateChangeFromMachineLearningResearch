@@ -1,21 +1,75 @@
 import atexit
 import subprocess
 import time
-
 from collections import OrderedDict
 from subprocess import PIPE, Popen
 from xml.etree.ElementTree import fromstring
-from experiment_impact_tracker.utils import *
 
 import numpy as np
 import pandas as pd
+import requests
+from bs4 import BeautifulSoup
 
+import cpuinfo
 import psutil
+from experiment_impact_tracker.utils import *
+
+from .exceptions import GPUAttributeAssertionError
 
 _timer = getattr(time, 'monotonic', time.time)
 
 
+def get_gpu_info():
+    p = Popen(['nvidia-smi', '-q', '-x'], stdout=PIPE)
+    outs, errors = p.communicate()
+    xml = fromstring(outs)
+    datas = []
+    driver_version = xml.findall('driver_version')[0].text
+    cuda_version = xml.findall('cuda_version')[0].text
+
+    for gpu_id, gpu in enumerate(xml.getiterator('gpu')):
+        gpu_data = {}
+        name = [x for x in gpu.getiterator('product_name')][0].text
+        memory_usage = gpu.findall('fb_memory_usage')[0]
+        total_memory = memory_usage.findall('total')[0].text
+
+        gpu_data['name'] = name
+        gpu_data['total_memory'] = total_memory
+        gpu_data['driver_version'] = driver_version
+        gpu_data['cuda_version'] = cuda_version
+        datas.append(gpu_data)
+    return datas
+
+def assert_gpus_by_attributes(attributes_set):
+    """Assert that you're running on GPUs with a certain set of attributes.
+
+    This helps when running jobs in a cluster setting with heterogeneous GPUs
+    to filter out sets of GPUs that you'd rather avoid. Current NVIDIA attributes,
+    include product_name (e.g., GeForce GTX TITAN X, Titan xp, Tesla k40m, etc.),
+    must be an exact match based on string seen in nvidia-smi -q -x. 
+
+    Args:
+        attributes_set (dict): set of attribute key pairs
+
+    Raises:
+        GPUAttributeAssertionError on encountered asserted attribute mismatch
+    """
+    gpu_info = get_gpu_info()
+    for gpu in gpu_info:
+        for attribute, value in attributes_set.items():
+            if gpu[attribute] != value:
+                raise GPUAttributeAssertionError("Attribute {} asserted to be {}, but found {} instead.".format(
+                    attribute, value, gpu[attribute]))
+
 def _stringify_performance_states(state_dict):
+    """ Stringifies performance states across multiple gpus
+    
+    Args:
+        state_dict (dict(str)): a dictionary of gpu_id performance state values
+    
+    Returns:
+        str: a stringified version of the dictionary with gpu_id::performance state|gpu_id2::performance_state2 format
+    """
     return "|".join("::".join(map(lambda x: str(x), z)) for z in state_dict.items())
 
 

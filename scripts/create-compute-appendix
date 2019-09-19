@@ -1,90 +1,256 @@
 #!/usr/bin/env python3
 
 from __future__ import print_function
+
+import argparse
 import os
 import sys
-import argparse
 from datetime import datetime
+
 import numpy as np
-from pylatex import Document, Section, Subsection, Table, Tabular, Math, TikZ, Axis, \
-    Plot, Figure, Package, LineBreak
+
+from experiment_impact_tracker.compute_tracker import (PUE,
+                                                       load_data_into_frame,
+                                                       load_initial_info)
+from pylatex import (Axis, Document, Figure, LineBreak, Math, Package, Plot,
+                     Section, Subsection, Subsubsection, Table, Tabular, TikZ)
 from pylatex.utils import escape_latex
 
-from experiment_impact_tracker.compute_tracker import load_initial_info, load_data_into_frame, PUE
+def _easy_compare(dict_1, dict_2):
+    import json
+    dump = json.dumps(dict_1, sort_keys=True)
+    dump2 = json.dumps(dict_2, sort_keys=True)
+    return dump == dump2 
+
+def _generate_experiment_table(logdir, doc, info):
+    with doc.create(Section('Experiment {}'.format(logdir))):
+        with doc.create(Subsection('Device and Version Information')):
+            with doc.create(Subsubsection('CPU Information')):
+                with doc.create(Tabular('|r|p{8cm}|')) as table:
+                    table.add_hline()
+                    for key, value in info['cpu_info'].items():
+                        if isinstance(value, list):
+                            value = ", ".join([str(x) for x in value])
+                        table.add_row((key, value))
+                        table.add_hline()
+                # doc.append('Brand: ' + str(info["cpu_info"]["brand"]))
+                # doc.append(LineBreak())
+                # doc.append('Hz (Actual): ' +
+                #    (str(info["cpu_info"]["hz_actual"])))
+            with doc.create(Subsubsection('GPU Information')):
+                num_gpus = len(info["gpu_info"])
+                doc.append("Num GPUs: {}\n".format(num_gpus))
+                for gpu in info["gpu_info"]:
+                    with doc.create(Tabular('|r|p{8cm}|')) as table:
+                        table.add_hline()
+                        for key, value in gpu.items():
+                            if isinstance(value, list):
+                                value = ",".join(value)
+                            table.add_row((key, value))
+                            table.add_hline()
+                # doc.append(LineBreak())
+                # doc.append('GPU Info: ' +
+                #            (",".join([x["name"] for x in info["gpu_info"]])))
+                # TODO: more gpu info
+            with doc.create(Subsubsection('Carbon Estimation Information')):
+                with doc.create(Tabular('|r|p{8cm}|')) as table:
+                    table.add_hline()
+                    try:
+                        table.add_row(['Experiment Impact Tracker Version',
+                                    info["experiment_impact_tracker_version"]])
+                    except:
+                        table.add_row(['Experiment Impact Tracker Version',
+                                    info["climate_impact_tracker_version"]])
+                    table.add_hline()
+                    table.add_row(('Compute Region', info["region"]["id"]))
+                    table.add_hline()
+                    table.add_row(('region est. gCO2eq/kWh',
+                                  str(info["region_carbon_intensity_estimate"]["carbonIntensity"])))
+                    table.add_hline()
+                    table.add_row(('Carbon Data Source', str(
+                        info["region_carbon_intensity_estimate"]["_source"])))
+                    table.add_hline()
+                    table.add_row(('Assumed PUE', str(PUE)))
+                    table.add_hline()
+
+        df = load_data_into_frame(logdir)
+        exp_len = df["timestamp"].iloc[-1] - \
+            datetime.timestamp(info["experiment_start"])
+        exp_len_hours = exp_len/3600.
+        # integrate power
+        # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
+        # multiply by carbon intensity to get Kg Carbon eq
+
+        time_differences = df["timestamp"].diff()
+        time_differences[0] = df["timestamp"][0] - \
+            datetime.timestamp(info["experiment_start"])
+        # elementwise multiplication and sum
+        kw_hr_rapl = np.multiply(
+            time_differences/3600., df["rapl_estimated_attributable_power_draw"]).sum()
+        # elementwise multiplication and sum
+        kw_hr_nvidia = np.multiply(
+            time_differences/3600., df["nvidia_estimated_attributable_power_draw"]).sum()
+        total_power = PUE*(kw_hr_nvidia + kw_hr_rapl)
+        estimated_carbon_impact = total_power * \
+            info["region_carbon_intensity_estimate"]["carbonIntensity"] / 1000.0
+        # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation)
+        gpu_hours = np.multiply(
+            time_differences/3600., df["average_gpu_estimated_utilization_absolute"]).sum() * num_gpus
+        with doc.create(Subsection('Experiment Info')):
+            with doc.create(Tabular('|r|c|')) as table:
+                table.add_hline()
+                table.add_row(('Experiment Start Time', str(
+                    datetime.timestamp(info["experiment_start"]))))
+                table.add_hline()
+                table.add_row(
+                    ('Experiment Length (hours)', str(exp_len_hours)))
+                table.add_hline()
+                table.add_row(
+                    ('Intel (CPU+DRAM, RAPL) Power Usage (kWh)', str(kw_hr_rapl)))
+                table.add_hline()
+                table.add_row('NVIDIA (GPU) Power Usage (kWh)',
+                              str(kw_hr_nvidia))
+                table.add_hline()
+                table.add_row(
+                    'Total (Including PUE Mult.) Power (kWh)', str(total_power))
+                table.add_hline()
+                table.add_row(('Estimated Carbon Impact (kgCO2eq)',
+                              str(estimated_carbon_impact)))
+                table.add_hline()
+                table.add_row(('Final CPU-Hours (psutil estimate)',
+                              str(df['cpu_time_seconds'].iloc[-1]/3600.)))
+                table.add_hline()
+                table.add_row(
+                    ('Final GPU-Hours (climate-impact-tracker estimate)', str(gpu_hours)))
+                table.add_hline()
+
+    return { "carbon_impact": estimated_carbon_impact, 
+             "cpu_hours": df['cpu_time_seconds'].iloc[-1]/3600., 
+             "gpu_hours": gpu_hours, 
+             "total_power_usage": total_power, 
+             "gpu_power_usage": kw_hr_nvidia, 
+             "cpu_package_power_usage": kw_hr_rapl
+             }
+
 
 def main(arguments):
 
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('logdir', help="Input file", type=str)
-    args = parser.parse_args(arguments)
+    parser=argparse.ArgumentParser(
+        description = __doc__,
+        formatter_class = argparse.RawDescriptionHelpFormatter)
+    parser.add_argument('logdirs', nargs = '+',
+                        help = "Input directories", type = str)
+    parser.add_argument('--compare_dirs', nargs = '+',
+                        help = "Compare against another set of directories. E.g., Outputs all experiment appendices, aggregated results, and a statistical comparison between the two sets of experiments.", type = str)
+    args=parser.parse_args(arguments)
 
-    info = load_initial_info(args.logdir)
 
-    doc = Document()
+    doc=Document()
+    aggregated_info={}
 
-    with doc.create(Section('Device and Version Information')):
-        with doc.create(Subsection('CPU Information')):
-            doc.append('Brand: ' + str(info["cpu_info"]["brand"]))
-            doc.append(LineBreak())
-            doc.append('Hz (Actual): ' + (str(info["cpu_info"]["hz_actual"])))
-        with doc.create(Subsection('GPU Information')):
-            num_gpus =  len(info["gpu_info"])
-            doc.append("Num GPUs: " + str(num_gpus))
-            doc.append(LineBreak())
-            doc.append('GPU Info: ' + (",".join([x["name"] for x in info["gpu_info"]])))
-            # TODO: more gpu info
-        with doc.create(Subsection('Carbon Estimation Information')):
+    gpu_infos = []
+    cpu_infos = []
+
+    for x in args.logdirs:
+        info = load_initial_info(x)
+        gpu_infos.append(info["gpu_info"])
+        cpu_infos.append(info["cpu_info"])
+        extracted_info = _generate_experiment_table(x, doc, info)
+        for key, value in extracted_info.items():
+            if key not in aggregated_info:
+                aggregated_info[key] = []
+            aggregated_info[key].append(value)
+
+    with doc.create(Section('Experiment Set 1')):
+        with doc.create(Subsection('Averaged')):
             with doc.create(Tabular('|r|c|')) as table:
                 table.add_hline()
-                table.add_row(['Climate Impact Tracker Version', info["experiment_impact_tracker_version"]])
+                for key, values in aggregated_info.items():
+                    values_mean = np.mean(values)
+                    values_stddev = np.std(values)
+                    table.add_row((key, "{} +/- {}".format(values_mean, values_stddev)))
+                    table.add_hline()
+        with doc.create(Subsection('Cumulative')):
+            with doc.create(Tabular('|r|c|')) as table:
                 table.add_hline()
-                table.add_row(('Compute Region', info["region"]["id"]))
-                table.add_hline()
-                table.add_row(('Region Carbon Intensity Estimate (gCO2eq/kWh)',str(info["region_carbon_intensity_estimate"]["carbonIntensity"])))
-                table.add_hline()
-                table.add_row(('Region Carbon Intensity Estimate Data Source', str(info["region_carbon_intensity_estimate"]["_source"])))
-                table.add_hline()
-                table.add_row(('Assumed PUE',str(PUE)))
-                table.add_hline()
+                for key, values in aggregated_info.items():
+                    values_summed = np.sum(values)
+                    table.add_row((key, "{}".format(values_summed)))
+                    table.add_hline()
+    old_aggregate_info = aggregated_info
+    aggregated_info={}
+    old_gpu_infos = gpu_infos
+    old_cpu_infos = cpu_infos
+    cpu_infos = []
+    gpu_infos = []
 
-    df = load_data_into_frame(args.logdir)
-    exp_len = df["timestamp"].iloc[-1] - datetime.timestamp(info["experiment_start"])
-    exp_len_hours = exp_len/3600.
-    # integrate power
-    # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
-    # multiply by carbon intensity to get Kg Carbon eq
+    if args.compare_dirs:
+        for x in args.compare_dirs:
+            info = load_initial_info(x)
+            gpu_infos.append(info["gpu_info"])
+            cpu_infos.append(info["cpu_info"])
+            extracted_info = _generate_experiment_table(x, doc, info)
+            for key, value in extracted_info.items():
+                if key not in aggregated_info:
+                    aggregated_info[key] = []
+                aggregated_info[key].append(value)
 
-    time_differences = df["timestamp"].diff()
-    time_differences[0] = df["timestamp"][0] - datetime.timestamp(info["experiment_start"])
-    kw_hr_rapl = np.multiply(time_differences/3600., df["rapl_estimated_attributable_power_draw"]).sum() #elementwise multiplication and sum
-    kw_hr_nvidia = np.multiply(time_differences/3600., df["nvidia_estimated_attributable_power_draw"]).sum() #elementwise multiplication and sum
-    total_power = PUE*(kw_hr_nvidia + kw_hr_rapl)
-    estimated_carbon_impact= total_power * info["region_carbon_intensity_estimate"]["carbonIntensity"] / 1000.0
-    gpu_hours = np.multiply(time_differences/3600., df["average_gpu_estimated_utilization"] / 100.0).sum() * num_gpus # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation) 
-    with doc.create(Section('Experiment Info')):
-        with doc.create(Tabular('|r|c|')) as table:
-            table.add_hline()
-            table.add_row(('Experiment Start Time', str(datetime.timestamp(info["experiment_start"]))))
-            table.add_hline()
-            table.add_row(('Experiment Length (hours)', str(exp_len_hours)))
-            table.add_hline()
-            table.add_row(('Intel (CPU+DRAM, RAPL) Power Usage (kWh)',  str(kw_hr_rapl)))
-            table.add_hline()
-            table.add_row('NVIDIA (GPU) Power Usage (kWh)',  str(kw_hr_nvidia))
-            table.add_hline()
-            table.add_row('Total (Including PUE Mult.) Power (kWh)',  str(total_power))
-            table.add_hline()
-            table.add_row(('Estimated Carbon Impact (kgCO2eq)', str(estimated_carbon_impact)))
-            table.add_hline()
-            table.add_row(('Final CPU-Hours (psutil estimate)', str(df['cpu_time_seconds'].iloc[-1]/3600.)))
-            table.add_hline()
-            table.add_row(('Final GPU-Hours (climate-impact-tracker estimate)', str(gpu_hours)))
-            table.add_hline()
+        with doc.create(Section('Experiment Set 2')):
+            with doc.create(Subsection('Averaged')):
+                with doc.create(Tabular('|r|c|')) as table:
+                    table.add_hline()
+                    for key, values in aggregated_info.items():
+                        values_mean = np.mean(values)
+                        values_stddev = np.std(values)
+                        table.add_row((key, "{} +/- {} (stddev)".format(values_mean, values_stddev)))
+                        table.add_hline()
+            with doc.create(Subsection('Cumulative')):
+                with doc.create(Tabular('|r|c|')) as table:
+                    table.add_hline()
+                    for key, values in aggregated_info.items():
+                        values_summed = np.sum(values)
+                        table.add_row((key, "{}".format(values_summed)))
+                        table.add_hline()
 
-    doc.generate_tex(os.path.join(args.logdir, 'impact_appendix'))
-    doc.generate_pdf(os.path.join(args.logdir, 'impact_appendix'))
+        
+        with doc.create(Section('Experiment Set Difference')):
+            with doc.create(Subsection('Average Treatment Effect')):
+                with doc.create(Tabular('|r|c|')) as table:
+                    table.add_hline()
+                    for key, values in aggregated_info.items():
+                        delta = np.mean(values) - np.mean(old_aggregate_info[key])
+                        delta_err = 1.96 * np.sqrt(np.var(values) / len(values) + \
+                            np.var(old_aggregate_info[key]) / len(old_aggregate_info[key]))
+        
+                        table.add_row((key, "{} +/- {} (stderr)".format(delta, delta_err)))
+                        table.add_hline()
+
+        # TODO: raise exception on comparison with incompatible GPUs, make assertions/warnings on average specs of CPU/GPU
+        import pdb; pdb.set_trace()
+        # any(x != y for x, y in pairs)
+        num_gpus = ([len(x) for x in gpu_infos])
+        num_gpus_old = ([len(x) for x in old_gpu_infos])
+        if sorted(num_gpus_old) != sorted(num_gpus):
+            raise NotImplementedError("You're looking to compare two sets of experiments with a different heterogeneous make-up of GPU numbers.")
+
+        if not _easy_compare(gpu_infos, old_gpu_infos):
+            raise NotImplementedError("You're looking to compare two sets of heterogeneous GPUs that are of different compositions. This will result in uncomparable results.")
+
+        # TODO: actual Hz is never the same so maybe look at some subset of metrics or make sure average Hz is somewhat similar
+        ignore_cpu_attrs = ["hz_actual", "hz_actual_raw", "flags"]
+        for cpu_info in cpu_infos:
+            for attr in ignore_cpu_attrs:
+                del cpu_info[attr]
+        for cpu_info in old_cpu_infos:
+            for attr in ignore_cpu_attrs:
+                del cpu_info[attr]
+
+        if not _easy_compare(cpu_infos, old_cpu_infos):
+            import pdb; pdb.set_trace()
+            raise NotImplementedError("You're looking to compare two sets of heterogeneous CPUs that are of different compositions. This will result in uncomparable results.")
+
+    doc.generate_tex(os.path.join('./', 'impact_appendix'))
+    doc.generate_pdf(os.path.join('./', 'impact_appendix'))
 
     # log average gpu/cpu usage
     # log cpu/gpu hours
@@ -92,4 +258,3 @@ def main(arguments):
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))
-

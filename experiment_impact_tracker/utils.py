@@ -1,21 +1,12 @@
 import atexit
 import csv
-import logging
 import os
-import pickle
-import subprocess
 import sys
-import threading
 import time
 import traceback
-from collections import OrderedDict
 from datetime import datetime
 from functools import wraps
 from multiprocessing import Process, Queue
-from queue import Empty as EmptyQueueException
-from subprocess import PIPE, Popen
-from xml.etree.ElementTree import fromstring
-from sys import platform
 
 import numpy as np
 import pandas as pd
