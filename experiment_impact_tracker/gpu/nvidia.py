@@ -75,18 +75,32 @@ def _stringify_performance_states(state_dict):
 
 def get_nvidia_gpu_power(pid_list, logger=None):
     # Find per process per gpu usage info
-    sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '10'],
+    sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '5'],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out_str = sp.communicate()
+    print(out_str)
     out_str_split = out_str[0].decode('utf-8').split('\n')
     # sometimes with too many processess on the machine or too many gpus, this command will reprint the headers
     # to avoid that we just remove duplicate lines
     out_str_split = list(OrderedDict.fromkeys(out_str_split))
-    out_str_pruned = [out_str_split[0], ] + out_str_split[2:]
+    out_str_pruned = [x for x in out_str_split if 'Idx' not in x] # [out_str_split[0], ] + out_str_split[2:]
+    
+    # For some weird reason the header position sometimes gets jumbled so we need to re-order it to the front 
+    position = -1
+
+    for i, x in enumerate(out_str_pruned):
+        if 'gpu' in x:
+            position = i
+    if position == -1:
+        raise ValueError('Problem with output in nvidia-smi pmon -c 10')
+    out_str_pruned.insert(0, out_str_pruned.pop(position))
     out_str_final = "\n".join(out_str_pruned)
     out_str_final = out_str_final.replace("-", "0")
+    out_str_final = out_str_final.replace("#", "")
+
     df = pd.read_csv(pd.compat.StringIO(
-        out_str_final[1:]), engine='python', delim_whitespace=True)
+        out_str_final), engine='python', delim_whitespace=True)
+    print(out_str_final)
     process_percentage_used_gpu = df.groupby(
         ['gpu', 'pid']).mean().reset_index()
 

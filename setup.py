@@ -17,17 +17,20 @@ if sys.version_info.major != 3:
 
 setup(name='experiment_impact_tracker',
       packages= find_packages(),
+      include_package_data=True,
       install_requires=[
+          'requests',
           'bs4',
           'shapely',
-          'commentjson',
           'scipy',
           'joblib',
           'numpy',
-          'pandas',
+          'pandas==0.24.2',
           'matplotlib',
           'py-cpuinfo',
-          'pylatex'
+          'pylatex',
+          'ujson',
+          'geocoder'
       ], 
       extras_require={
         'tests': [
@@ -50,8 +53,7 @@ setup(name='experiment_impact_tracker',
       keywords="reinforcement-learning-algorithms reinforcement-learning machine-learning "
                "gym openai baselines toolbox python data-science",
       license="MIT",
-      version=main_ns['__version__'],
-      scripts=['scripts/compute-tracker', 'scripts/track-impact']
+      version=main_ns['__version__']
       )
 
 # python setup.py sdist
