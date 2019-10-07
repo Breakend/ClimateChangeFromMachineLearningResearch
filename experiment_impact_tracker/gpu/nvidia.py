@@ -40,6 +40,7 @@ def get_gpu_info():
         datas.append(gpu_data)
     return datas
 
+
 def assert_gpus_by_attributes(attributes_set):
     """Assert that you're running on GPUs with a certain set of attributes.
 
@@ -57,16 +58,21 @@ def assert_gpus_by_attributes(attributes_set):
     gpu_info = get_gpu_info()
     for gpu in gpu_info:
         for attribute, value in attributes_set.items():
-            if gpu[attribute] != value:
-                raise GPUAttributeAssertionError("Attribute {} asserted to be {}, but found {} instead.".format(
-                    attribute, value, gpu[attribute]))
+            try:
+                if gpu[attribute] != value:
+                    raise GPUAttributeAssertionError("Attribute {} asserted to be {}, but found {} instead.".format(
+                        attribute, value, gpu[attribute]))
+            except KeyError:
+                raise GPUAttributeAssertionError("Attribute {} does not exist. Available attributes: {}.".format(
+                    attribute, ",".join(list(gpu.keys()))))
+
 
 def _stringify_performance_states(state_dict):
     """ Stringifies performance states across multiple gpus
-    
+
     Args:
         state_dict (dict(str)): a dictionary of gpu_id performance state values
-    
+
     Returns:
         str: a stringified version of the dictionary with gpu_id::performance state|gpu_id2::performance_state2 format
     """

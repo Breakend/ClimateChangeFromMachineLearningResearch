@@ -30,7 +30,8 @@ setup(name='experiment_impact_tracker',
           'py-cpuinfo',
           'pylatex',
           'ujson',
-          'geocoder'
+          'geocoder',
+          'deepdiff'
       ], 
       extras_require={
         'tests': [

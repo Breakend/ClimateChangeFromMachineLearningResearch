@@ -10,15 +10,15 @@ import pandas
 from gym.core import Wrapper
 import matplotlib.pyplot as plt
 # Init seaborn
+import scipy
 import argparse
-from rl_stats import run_test
+from experiment_impact_tracker.stats import run_test, get_average_treatment_effect
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', '--log-dirs', help='Log folder(s)', nargs='+', required=True, type=str)
 parser.add_argument('--title', help='Plot title', default='Learning Curve', type=str)
 parser.add_argument('--smooth', action='store_true', default=False,
                     help='Smooth Learning Curve')
 args = parser.parse_args()
-import pdb; pdb.set_trace()
 
 from baselines.common import plot_util as pu
 
@@ -50,18 +50,24 @@ for result in results:
 for group in groups:
     print("Group {}".format(group))
     average_average_return = np.mean(groups[group]["average_returns"])
-    stderr_average_return = np.std(groups[group]["average_returns"])  / len(groups[group]["average_returns"])
-    print("Average Returns {} +/- {}".format(average_average_return, stderr_average_return))    
+    stderr_average_return = scipy.stats.sem(groups[group]["average_returns"])# np.std(groups[group]["average_returns"])  / np.sqrt(len(groups[group]["average_returns"]))
+    print("Average Returns {:.2f} \pm {:.2f}".format(average_average_return, stderr_average_return))    
 
     average_average_return = np.mean(groups[group]["asymptotic_returns"])
-    stderr_average_return = np.std(groups[group]["asymptotic_returns"])  / len(groups[group]["asymptotic_returns"])
-    print("Asymptotic Returns {} +/- {}".format(average_average_return, stderr_average_return))    
+    stderr_average_return = scipy.stats.sem(groups[group]["asymptotic_returns"])# np.std(groups[group]["asymptotic_returns"])  / np.sqrt(len(groups[group]["asymptotic_returns"]))
+    print("Asymptotic Returns {:.2f} \pm {:.2f}".format(average_average_return, stderr_average_return))    
 
     #TODO: significance testing, change to standard error
 
 print("{} vs. {} Average returns".format(list(groups.keys())[0], list(groups.keys())[1]))
-print(run_test('Welch t-test', np.array(groups[list(groups.keys())[0]]["average_returns"]), np.array(groups[list(groups.keys())[1]]["average_returns"])))
+significant_difference, p = run_test('Welch t-test', np.array(groups[list(groups.keys())[0]]["average_returns"]), np.array(groups[list(groups.keys())[1]]["average_returns"]))
+ate,  std_err = get_average_treatment_effect(np.array(groups[list(groups.keys())[0]]["average_returns"]), np.array(groups[list(groups.keys())[1]]["average_returns"]))
+print("ATE : {:.2f} \pm {:.2f}".format(ate, std_err))
+print("There was {}a significance difference with p={:.2f} and threshold .05.".format("" if significant_difference else "not ", p))
 print("{} vs. {} asymptotic returns".format(list(groups.keys())[0], list(groups.keys())[1]))
-print(run_test('Welch t-test', np.array(groups[list(groups.keys())[0]]["asymptotic_returns"]), np.array(groups[list(groups.keys())[1]]["asymptotic_returns"])))
+significant_difference, p = run_test('Welch t-test', np.array(groups[list(groups.keys())[0]]["asymptotic_returns"]), np.array(groups[list(groups.keys())[1]]["asymptotic_returns"]))
+ate,  std_err = get_average_treatment_effect(np.array(groups[list(groups.keys())[0]]["asymptotic_returns"]), np.array(groups[list(groups.keys())[1]]["asymptotic_returns"]))
+print("ATE : {:.2f} \pm {:.2f}".format(ate, std_err))
+print("There was {}a significance difference with p={:.2f} and threshold .05.".format("" if significant_difference else "not ", p))
 
 # plt.savefig('plot.png')

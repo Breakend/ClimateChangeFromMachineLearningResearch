@@ -22,6 +22,7 @@ from experiment_impact_tracker.data_info_and_router import DATA_HEADERS
 from experiment_impact_tracker.gpu.nvidia import (get_gpu_info,
                                                   get_nvidia_gpu_power)
 from experiment_impact_tracker.utils import *
+from experiment_impact_tracker.emissoins.common import is_capable_realtime_carbon_intensity
 
 BASE_LOG_PATH = 'impacttracker/'
 DATAPATH = BASE_LOG_PATH + 'data.csv'
@@ -116,7 +117,7 @@ def _is_nvidia_compatible():
     return True
 
 
-def _get_compatibilities(required_elements=[]):
+def _get_compatibilities(required_elements=[], region=None):
     if not (platform == "linux" or platform == "linux2"):
         raise NotImplementedError(
             "Do not currently support systems outside of linux. Sorry! Please feel free to send a pull request for compatibility.")
@@ -130,6 +131,9 @@ def _get_compatibilities(required_elements=[]):
     if _is_nvidia_compatible():
         compatibilities.append("nvidia")
         compatibilities.append("gpu")
+
+    if region is not None and is_capable_realtime_carbon_intensity(region):
+        compatibilities.append("realtime_carbon")
 
     if "cpu" not in compatibilities:
         raise ValueError(
@@ -162,7 +166,7 @@ def gather_initial_info(log_dir):
     region, zone_info = get_current_region_info()
     info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
 
-    compatibilities = _get_compatibilities()
+    compatibilities = _get_compatibilities(region)
 
     data = {
         "cpu_info": get_my_cpu_info(),

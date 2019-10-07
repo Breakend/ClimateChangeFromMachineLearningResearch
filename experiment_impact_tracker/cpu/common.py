@@ -1,6 +1,7 @@
 import cpuinfo
 from .exceptions import CPUAttributeAssertionError
 
+
 def get_my_cpu_info():
     return cpuinfo.get_cpu_info()
 
@@ -17,7 +18,7 @@ def assert_cpus_by_attributes(attributes_set):
         "brand": "Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz",
         "hz_advertised": "2.6000 GHz"
     }
-    
+
     Args:
         attributes_set (dict): set of attribute key pairs
 
@@ -26,6 +27,10 @@ def assert_cpus_by_attributes(attributes_set):
     """
     cpu_info = get_my_cpu_info()
     for attribute, value in attributes_set.items():
-        if cpu_info[attribute] != value:
-            raise CPUAttributeAssertionError("Attribute {} asserted to be {}, but found {} instead.".format(
-                attribute, value, cpu_info[attribute]))
+        try:
+            if cpu_info[attribute] != value:
+                raise CPUAttributeAssertionError("Attribute {} asserted to be {}, but found {} instead.".format(
+                    attribute, value, cpu_info[attribute]))
+        except KeyError:
+            raise CPUAttributeAssertionError("Attribute {} does not exist. Available attributes: {}.".format(
+                attribute, ",".join(list(cpu_info.keys()))))

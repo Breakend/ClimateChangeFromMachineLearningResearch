@@ -4,6 +4,7 @@ from experiment_impact_tracker.cpu import rapl
 
 from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
 from experiment_impact_tracker.utils import *
+frmo experiment_impact_tracker.emissions.common import get_realtime_carbon
 
 DATA_HEADERS = [
     {
@@ -128,6 +129,14 @@ DATA_HEADERS = [
         "compatability": ["all"],
         "routing": {
             "function": get_hz_actual
+        }
+    },
+    {
+        "name" : "realtime_carbon_intensity",
+        "description" : "If available, the realtime carbon intensity in the region.",
+        "compatability" : ["realtime_carbon"],
+        "routing" : {
+            get_realtime_carbon
         }
     }
 ]
