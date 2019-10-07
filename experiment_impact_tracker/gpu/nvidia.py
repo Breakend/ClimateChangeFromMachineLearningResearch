@@ -79,7 +79,7 @@ def _stringify_performance_states(state_dict):
     return "|".join("::".join(map(lambda x: str(x), z)) for z in state_dict.items())
 
 
-def get_nvidia_gpu_power(pid_list, logger=None):
+def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
     # Find per process per gpu usage info
     sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '5'],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
