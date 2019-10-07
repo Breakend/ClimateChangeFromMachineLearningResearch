@@ -78,7 +78,6 @@ def get_nvidia_gpu_power(pid_list, logger=None):
     sp = subprocess.Popen(['nvidia-smi', 'pmon', '-c', '5'],
                           stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     out_str = sp.communicate()
-    print(out_str)
     out_str_split = out_str[0].decode('utf-8').split('\n')
     # sometimes with too many processess on the machine or too many gpus, this command will reprint the headers
     # to avoid that we just remove duplicate lines
@@ -100,7 +99,6 @@ def get_nvidia_gpu_power(pid_list, logger=None):
 
     df = pd.read_csv(pd.compat.StringIO(
         out_str_final), engine='python', delim_whitespace=True)
-    print(out_str_final)
     process_percentage_used_gpu = df.groupby(
         ['gpu', 'pid']).mean().reset_index()
 

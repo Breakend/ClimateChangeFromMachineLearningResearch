@@ -47,7 +47,7 @@ _timer = getattr(time, 'monotonic', time.time)
 
 def get_rapl_power(pid_list, logger=None):
     s1 = rapl.RAPLMonitor.sample()
-    time.sleep(3)
+    time.sleep(2)
     s2 = rapl.RAPLMonitor.sample()
     diff = s2 - s1
     total_intel_power = 0
@@ -97,6 +97,7 @@ def get_rapl_power(pid_list, logger=None):
     absolute_cpu_percent = 0
     cpu_times = 0
     mem_infos = []
+    print(pid_list)
     for process in pid_list:
         try:
             p = psutil.Process(process)
@@ -145,10 +146,12 @@ def get_rapl_power(pid_list, logger=None):
     # TODO: how can we get system wide memory usage
     total_physical_memory = psutil.virtual_memory()
     # what percentage of used memory can be attributed to this process
-    system_wide_mem_percent = (
-        np.sum([x.rss for x in mem_infos]) / float(total_physical_memory.used))
+    # uss is unique memory to this process (if you killed it now that would be freed). PSS is shared memory split evenly among processes using the memory
+    # summing these two gets us a nice fair metric for the actual memory used in the RAM hardware. The unique bits are directly attributable to the process
+    # and the shared bits we give credit based on how many processes share those bits
+    system_wide_mem_percent = np.sum([float(x.uss + x.pss) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_infos])
 
-    power_credit_cpu = cpu_percent  # / system_wide_cpu_percent
+    power_credit_cpu = cpu_percent 
     power_credit_mem = system_wide_mem_percent
     if power_credit_cpu == 0:
         raise ValueError(
@@ -163,7 +166,7 @@ def get_rapl_power(pid_list, logger=None):
     if total_dram_power != 0:
         total_attributable_power += total_dram_power * power_credit_mem
 
-        # assign the rest of the power to the CPU percentage even if this is a bit innacurate
+    # assign the rest of the power to the CPU percentage even if this is a bit innacurate
     total_attributable_power += (total_intel_power -
                                  total_dram_power - total_cpu_power) * power_credit_cpu
 
@@ -176,7 +179,10 @@ def get_rapl_power(pid_list, logger=None):
         "rapl_estimated_attributable_power_draw": total_attributable_power,
         "cpu_time_seconds": cpu_times,
         "average_relative_cpu_utilization": cpu_percent,
-        "absolute_cpu_utilization": absolute_cpu_percent
+        "absolute_cpu_utilization": absolute_cpu_percent,
+        "relative_mem_usage" : system_wide_mem_percent,
+        "absolute_mem_usage" : np.sum([x.uss for x in mem_infos]),
+        "absolute_mem_percent_usage" : np.sum([float(x.uss + x.pss) / float(total_physical_memory.total)  for x in mem_infos])
     }
 
     return data_return_values_with_headers

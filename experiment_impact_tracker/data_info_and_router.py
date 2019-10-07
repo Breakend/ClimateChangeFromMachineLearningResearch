@@ -1,4 +1,5 @@
 from experiment_impact_tracker.cpu.intel import get_rapl_power
+from experiment_impact_tracker.cpu.common import get_hz_actual
 from experiment_impact_tracker.cpu import rapl
 
 from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
@@ -95,6 +96,38 @@ DATA_HEADERS = [
         "compatability": ["nvidia"],
         "routing": {
             "function": get_nvidia_gpu_power
+        }
+    },
+    {
+        "name": "relative_mem_usage",
+        "description": "The percentage of all in-use ram this program is using.",
+        "compatability": ["rapl"],
+        "routing": {
+            "function": get_rapl_power 
+        }
+    },
+    {
+        "name": "absolute_mem_usage",
+        "description": "The amount of memory being used.",
+        "compatability": ["rapl"],
+        "routing": {
+            "function": get_rapl_power
+        }
+    },
+    {
+        "name": "absolute_mem_percent_usage",
+        "description": "The amount of memory being used as an absolute percentage of total memory (RAM).",
+        "compatability": ["rapl"],
+        "routing": {
+            "function": get_rapl_power
+        }
+    },
+    {
+        "name": "hz_actual",
+        "description": "The current hz of the CPU.",
+        "compatability": ["all"],
+        "routing": {
+            "function": get_hz_actual
         }
     }
 ]

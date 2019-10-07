@@ -4,6 +4,9 @@ from .exceptions import CPUAttributeAssertionError
 def get_my_cpu_info():
     return cpuinfo.get_cpu_info()
 
+def get_hz_actual(*args, **kwargs):
+    return cpuinfo.get_cpu_info()['hz_actual']
+
 def assert_cpus_by_attributes(attributes_set):
     """Assert that you're running on CPUs with a certain set of attributes.
 
