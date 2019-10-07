@@ -22,7 +22,7 @@ def fetch_supply(*args, **kwargs):
     # See example https://stackoverflow.com/questions/31771286/python-in-memory-cache-with-time-to-live
     return _fetch_supply(**kwargs, ttl_hash=get_ttl_hash(seconds=5*60))
 
-@lru_cache
+@lru_cache(maxsize=32)
 def _fetch_supply(target_datetime=None, latest_only=True, ttl_hash=None, **kwargs):
     """Requests the last known supply mix (in MW) of a given country
     Arguments:

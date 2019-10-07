@@ -5,13 +5,14 @@ REALTIME_REGIONS = {
 }
 
 def is_capable_realtime_carbon_intensity(region):
-    return region in REALTIME_REGIONS:
+    return region in REALTIME_REGIONS
     
 
 def get_realtime_carbon(*args, **kwargs):
     if 'region' not in kwargs:
         raise ValueError("region was not passed to function")
-
+    carbon_intensity = REALTIME_REGIONS[kwargs['region']]()[0]['carbon_intensity']
+    print(carbon_intensity)
     return {
-        "realtime_carbon_intensity" : REALTIME_REGIONS[kwargs['region']][0]
+        "realtime_carbon_intensity" : carbon_intensity 
     }

@@ -22,7 +22,7 @@ from experiment_impact_tracker.data_info_and_router import DATA_HEADERS
 from experiment_impact_tracker.gpu.nvidia import (get_gpu_info,
                                                   get_nvidia_gpu_power)
 from experiment_impact_tracker.utils import *
-from experiment_impact_tracker.emissoins.common import is_capable_realtime_carbon_intensity
+from experiment_impact_tracker.emissions.common import is_capable_realtime_carbon_intensity
 
 BASE_LOG_PATH = 'impacttracker/'
 DATAPATH = BASE_LOG_PATH + 'data.csv'
@@ -42,11 +42,11 @@ def read_latest_stats(log_dir):
         return None
 
 
-def _sample_and_log_power(log_dir, logger=None):
+def _sample_and_log_power(log_dir, initial_info, logger=None):
     current_process = psutil.Process(os.getppid())
     process_ids = [current_process.pid] + \
         [child.pid for child in current_process.children(recursive=True)]
-    compatibilities = _get_compatibilities()
+    compatibilities = _get_compatibilities(region=initial_info['region']['id'])
 
     required_headers = _get_compatible_data_headers(compatibilities)
 
@@ -61,7 +61,7 @@ def _sample_and_log_power(log_dir, logger=None):
             # we already got that info from a multi-return function call
             continue
 
-        results = header["routing"]["function"](process_ids, logger=logger)
+        results = header["routing"]["function"](process_ids, logger=logger, region=initial_info['region']['id'])
 
         if isinstance(results, dict):
             # if we return a dict of results, could account for multiple headers
@@ -78,7 +78,7 @@ def _sample_and_log_power(log_dir, logger=None):
 
 
 @processify
-def launch_power_monitor(queue, log_dir, logger=None):
+def launch_power_monitor(queue, log_dir, initial_info, logger=None):
     logger.warn("Starting process to monitor power")
     while True:
         try:
@@ -92,7 +92,7 @@ def launch_power_monitor(queue, log_dir, logger=None):
             pass
 
         try:
-            _sample_and_log_power(log_dir, logger)
+            _sample_and_log_power(log_dir, initial_info, logger=logger)
         except:
             ex_type, ex_value, tb = sys.exc_info()
             logger.error("Encountered exception within power monitor thread!")
@@ -132,6 +132,8 @@ def _get_compatibilities(required_elements=[], region=None):
         compatibilities.append("nvidia")
         compatibilities.append("gpu")
 
+    print("region: {}".format(region))
+    print(is_capable_realtime_carbon_intensity(region))
     if region is not None and is_capable_realtime_carbon_intensity(region):
         compatibilities.append("realtime_carbon")
 
@@ -142,7 +144,7 @@ def _get_compatibilities(required_elements=[], region=None):
     for element in required_elements:
         if element not in compatibilities:
             raise ValueError(
-                "Looks like there's a requirement to log {}, but didn't find a method to do this. Please add a pull request if you'd like that information on your system!")
+                "Looks like there's a requirement to log {}, but didn't find a method to do this. Please add a pull request if you'd like that information on your system!".format(element))
 
     return compatibilities
 
@@ -166,7 +168,7 @@ def gather_initial_info(log_dir):
     region, zone_info = get_current_region_info()
     info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
 
-    compatibilities = _get_compatibilities(region)
+    compatibilities = _get_compatibilities(region=region["id"])
 
     data = {
         "cpu_info": get_my_cpu_info(),
@@ -187,6 +189,7 @@ def gather_initial_info(log_dir):
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     write_csv_data_to_file(
         data_path, [x["name"] for x in compatible_data_headers], overwrite=True)
+    return data
 
 
 def load_initial_info(log_dir):
@@ -206,7 +209,7 @@ class ImpactTracker(object):
         self.logdir = logdir
         self._setup_logging()
         self.logger.warn("Gathering system info for reproducibility...")
-        gather_initial_info(logdir)
+        self.initial_info = gather_initial_info(logdir)
         self.logger.warn("Done initial setup and information gathering...")
 
     def _setup_logging(self):
@@ -235,7 +238,7 @@ class ImpactTracker(object):
 
     def launch_impact_monitor(self):
         try:
-            self.p, self.queue = launch_power_monitor(self.logdir, self.logger)
+            self.p, self.queue = launch_power_monitor(self.logdir, self.initial_info, self.logger)
             atexit.register(lambda p: p.terminate(), self.p)
         except:
             ex_type, ex_value, tb = sys.exc_info()

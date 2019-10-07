@@ -31,7 +31,8 @@ setup(name='experiment_impact_tracker',
           'pylatex',
           'ujson',
           'geocoder',
-          'deepdiff'
+          'deepdiff',
+          'arrow'
       ], 
       extras_require={
         'tests': [

@@ -45,7 +45,7 @@ def get_and_cache_cpu_max_tdp_from_intel():
 _timer = getattr(time, 'monotonic', time.time)
 
 
-def get_rapl_power(pid_list, logger=None):
+def get_rapl_power(pid_list, logger=None, **kwargs):
     s1 = rapl.RAPLMonitor.sample()
     time.sleep(2)
     s2 = rapl.RAPLMonitor.sample()
