@@ -25,9 +25,56 @@ from deepdiff import DeepDiff  # For Deep Difference of 2 objects
 #     return dump == dump2 
 
 
+# TODO: give experiment set a name and then iterate through each one
+# TODO: Each individual one should make a new file and then a summary file and a differences file
 
-def _generate_experiment_table(logdir, doc, info):
-    with doc.create(Section('Experiment {}'.format(logdir))):
+def gather_additional_info(info, logdir):
+    df = load_data_into_frame(logdir)
+    num_gpus = len(info["gpu_info"])
+    exp_len = df["timestamp"].iloc[-1] - \
+        datetime.timestamp(info["experiment_start"])
+    exp_len_hours = exp_len/3600.
+    # integrate power
+    # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
+    # multiply by carbon intensity to get Kg Carbon eq
+
+    time_differences = df["timestamp"].diff()
+    time_differences[0] = df["timestamp"][0] - \
+        datetime.timestamp(info["experiment_start"])
+    # elementwise multiplication and sum
+    time_differences_in_hours = time_differences/3600.
+    power_draw_rapl_kw = df["rapl_estimated_attributable_power_draw"] / 1000.
+    kw_hr_rapl = np.multiply(time_differences_in_hours, power_draw_rapl_kw).sum()
+    nvidia_power_draw_kw = df["nvidia_estimated_attributable_power_draw"] / 1000.
+    # elementwise multiplication and sum
+    kw_hr_nvidia = np.multiply(time_differences_in_hours, nvidia_power_draw_kw).sum()
+    total_power = PUE * (kw_hr_nvidia + kw_hr_rapl)
+    estimated_carbon_impact_grams = total_power * \
+        info["region_carbon_intensity_estimate"]["carbonIntensity"]
+    estimated_carbon_impact_kg = estimated_carbon_impact_grams / 1000.0
+    # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation)
+    gpu_hours = np.multiply(
+        time_differences_in_hours, df["average_gpu_estimated_utilization_absolute"]).sum() * num_gpus
+
+    cpu_hours = df['cpu_time_seconds'].iloc[-1]/3600.
+
+    return {
+        "cpu_hours" : cpu_hours, 
+        "gpu_hours" : gpu_hours,
+        "estimated_carbon_impact_kg" : estimated_carbon_impact_kg,
+        "total_power" : total_power,
+        "kw_hr_gpu" : kw_hr_nvidia,
+        "kw_hr_cpu" : kw_hr_rapl,
+        "exp_len_hours" : exp_len_hours
+     }
+
+
+
+
+
+def _generate_experiment_table(logdir, info, extended_info, setname, set_experiment_number):
+    doc=Document()
+    with doc.create(Section('Experiment {} of set {}'.format(logdir, setname, set_experiment_number))):
         with doc.create(Subsection('Device and Version Information')):
             with doc.create(Subsubsection('CPU Information')):
                 with doc.create(Tabular('|r|p{8cm}|')) as table:
@@ -77,31 +124,7 @@ def _generate_experiment_table(logdir, doc, info):
                     table.add_row(('Assumed PUE', str(PUE)))
                     table.add_hline()
 
-        df = load_data_into_frame(logdir)
-        exp_len = df["timestamp"].iloc[-1] - \
-            datetime.timestamp(info["experiment_start"])
-        exp_len_hours = exp_len/3600.
-        # integrate power
-        # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
-        # multiply by carbon intensity to get Kg Carbon eq
 
-        time_differences = df["timestamp"].diff()
-        time_differences[0] = df["timestamp"][0] - \
-            datetime.timestamp(info["experiment_start"])
-        # elementwise multiplication and sum
-        time_differences_in_hours = time_differences/3600.
-        power_draw_rapl_kw = df["rapl_estimated_attributable_power_draw"] / 1000.
-        kw_hr_rapl = np.multiply(time_differences_in_hours, power_draw_rapl_kw).sum()
-        nvidia_power_draw_kw = df["nvidia_estimated_attributable_power_draw"] / 1000.
-        # elementwise multiplication and sum
-        kw_hr_nvidia = np.multiply(time_differences_in_hours, nvidia_power_draw_kw).sum()
-        total_power = PUE * (kw_hr_nvidia + kw_hr_rapl)
-        estimated_carbon_impact_grams = total_power * \
-            info["region_carbon_intensity_estimate"]["carbonIntensity"] 
-        estimated_carbon_impact_kg = estimated_carbon_impact_grams / 1000.0
-        # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation)
-        gpu_hours = np.multiply(
-            time_differences_in_hours, df["average_gpu_estimated_utilization_absolute"]).sum() * num_gpus
         with doc.create(Subsection('Experiment Info')):
             with doc.create(Tabular('|r|c|')) as table:
                 table.add_hline()
@@ -109,36 +132,28 @@ def _generate_experiment_table(logdir, doc, info):
                     datetime.timestamp(info["experiment_start"]))))
                 table.add_hline()
                 table.add_row(
-                    ('Experiment Length (hours)', str(exp_len_hours)))
+                    ('Experiment Length (hours)', str(extended_info["exp_len_hours"])))
                 table.add_hline()
                 table.add_row(
-                    ('Intel (CPU+DRAM, RAPL) Power Usage (kWh)', str(kw_hr_rapl)))
+                    ('Intel (CPU+DRAM, RAPL) Power Usage (kWh)', str(extended_info["kw_hr_cpu"])))
                 table.add_hline()
                 table.add_row('NVIDIA (GPU) Power Usage (kWh)',
-                              str(kw_hr_nvidia))
+                              str(extended_info["kw_hr_gpu"]))
                 table.add_hline()
                 table.add_row(
-                    'Total (Including PUE Mult.) Power (kWh)', str(total_power))
+                    'Total (Including PUE Mult.) Power (kWh)', str(extended_info["total_power"]))
                 table.add_hline()
                 table.add_row(('Estimated Carbon Impact (kgCO2eq)',
-                              str(estimated_carbon_impact_kg)))
+                              str(extended_info["estimated_carbon_impact_kg"])))
                 table.add_hline()
                 table.add_row(('Final CPU-Hours (psutil estimate)',
-                              str(df['cpu_time_seconds'].iloc[-1]/3600.)))
+                              str(extended_info["cpu_hours"])))
                 table.add_hline()
                 table.add_row(
-                    ('Final GPU-Hours (climate-impact-tracker estimate)', str(gpu_hours)))
+                    ('Final GPU-Hours (climate-impact-tracker estimate)', str(extended_info["gpu_hours"])))
                 table.add_hline()
-
-    return { "carbon_impact": estimated_carbon_impact_kg, 
-             "cpu_hours": df['cpu_time_seconds'].iloc[-1]/3600., 
-             "gpu_hours": gpu_hours, 
-             "total_power_usage": total_power, 
-             "gpu_power_usage": kw_hr_nvidia, 
-             "cpu_package_power_usage": kw_hr_rapl,
-             "experiment_time" : exp_len_hours
-             }
-
+    doc.generate_tex(os.path.join('./', setname, '/', set_experiment_number))
+    doc.generate_pdf(os.path.join('./', setname, '/', set_experiment_number))
 
 def main(arguments):
 
@@ -149,34 +164,36 @@ def main(arguments):
                         help = "Input directories", type = str)
     parser.add_argument('--compare_dirs', nargs = '+',
                         help = "Compare against another set of directories. E.g., Outputs all experiment appendices, aggregated results, and a statistical comparison between the two sets of experiments.", type = str)
+    parser.add_argument('--experiment_set_names', nargs="*")
     args=parser.parse_args(arguments)
     
     # TODO: add flag for summary stats instead of table for each, this should create a shorter appendix
 
-    doc=Document()
     aggregated_info={}
 
     gpu_infos = []
     cpu_infos = []
 
-    for x in args.logdirs:
+    for i, x in enumerate(args.logdirs):
         info = load_initial_info(x)
         gpu_infos.append(info["gpu_info"])
         cpu_infos.append(info["cpu_info"])
-        extracted_info = _generate_experiment_table(x, doc, info)
+        extracted_info = gather_additional_info(info, x)
+        _generate_experiment_table(x, info, extracted_info, args.experiment_set_names[0], i)
         for key, value in extracted_info.items():
             if key not in aggregated_info:
                 aggregated_info[key] = []
             aggregated_info[key].append(value)
 
-    with doc.create(Section('Experiment Set 1')):
+    doc=Document()
+    with doc.create(Section('Experiment Set {}'.format(args.experiment_set_names[0]))):
         with doc.create(Subsection('Averaged')):
             with doc.create(Tabular('|r|c|')) as table:
                 table.add_hline()
                 for key, values in aggregated_info.items():
                     values_mean = np.mean(values)
                     values_stdder = scipy.stats.sem(values)
-                    table.add_row((key, "{} +/- {} (stderr)".format(values_mean, values_stdder )))
+                    table.add_row((key, "{} +/- {} (stderr)".format(values_mean, values_stdder)))
                     table.add_hline()
         with doc.create(Subsection('Cumulative')):
             with doc.create(Tabular('|r|c|')) as table:
@@ -185,8 +202,11 @@ def main(arguments):
                     values_summed = np.sum(values)
                     table.add_row((key, "{}".format(values_summed)))
                     table.add_hline()
+    doc.generate_tex(os.path.join('./', args.experiment_set_names[0], '/summary'))
+    doc.generate_pdf(os.path.join('./', args.experiment_set_names[0], '/summary'))
+
     old_aggregate_info = aggregated_info
-    aggregated_info={}
+    aggregated_info = {}
     old_gpu_infos = gpu_infos
     old_cpu_infos = cpu_infos
     cpu_infos = []
@@ -197,31 +217,15 @@ def main(arguments):
             info = load_initial_info(x)
             gpu_infos.append(info["gpu_info"])
             cpu_infos.append(info["cpu_info"])
-            extracted_info = _generate_experiment_table(x, doc, info)
+            extracted_info = gather_additional_info(info, x)
             for key, value in extracted_info.items():
                 if key not in aggregated_info:
                     aggregated_info[key] = []
                 aggregated_info[key].append(value)
-
-        with doc.create(Section('Experiment Set 2')):
-            with doc.create(Subsection('Averaged')):
-                with doc.create(Tabular('|r|c|')) as table:
-                    table.add_hline()
-                    for key, values in aggregated_info.items():
-                        values_mean = np.mean(values)
-                        values_stdder = scipy.stats.sem(values)
-                        table.add_row((key, "{:.6g} +/- {:.6g} (stderr)".format(values_mean, values_stdder)))
-                        table.add_hline()
-            with doc.create(Subsection('Cumulative')):
-                with doc.create(Tabular('|r|c|')) as table:
-                    table.add_hline()
-                    for key, values in aggregated_info.items():
-                        values_summed = np.sum(values)
-                        table.add_row((key, "{}".format(values_summed)))
-                        table.add_hline()
-
         
-        with doc.create(Section('Experiment Set Difference')):
+        doc = Document()
+            
+        with doc.create(Section('Experiment Set Difference: {} v. {}'.format(args.experiment_set_names[0], args.experiment_set_names[1]))):
             with doc.create(Subsection('Average Treatment Effect (Per Experiment in Experiment Set)')):
                 with doc.create(Tabular('|r|c|')) as table:
                     table.add_hline()
@@ -241,6 +245,8 @@ def main(arguments):
         
                         table.add_row((key, "{}".format(delta)))
                         table.add_hline()
+        doc.generate_tex(os.path.join('./summary_{}_v_{}'.format(args.experiment_set_names[0].lower(), args.experiment_set_names[1].lower())))
+        doc.generate_pdf(os.path.join('./summary_{}_v_{}'.format(args.experiment_set_names[0].lower(), args.experiment_set_names[1].lower())))
 
 
         num_gpus = ([len(x) for x in gpu_infos])
@@ -267,8 +273,8 @@ def main(arguments):
             print(ddiff)
             raise NotImplementedError("You're looking to compare two sets of heterogeneous CPUs that are of different compositions. This will result in uncomparable results.")
 
-    doc.generate_tex(os.path.join('./', 'impact_appendix'))
-    doc.generate_pdf(os.path.join('./', 'impact_appendix'))
+    # doc.generate_tex(os.path.join('./', 'impact_appendix'))
+    # doc.generate_pdf(os.path.join('./', 'impact_appendix'))
 
     # log average gpu/cpu usage
     # log cpu/gpu hours
