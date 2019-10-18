@@ -8,11 +8,12 @@ import sys
 from datetime import datetime
 import scipy
 import numpy as np
-
+from pprint import pprint
 from experiment_impact_tracker.compute_tracker import (PUE,
                                                        load_data_into_frame,
                                                        load_initial_info)
 from experiment_impact_tracker.stats import run_test, get_average_treatment_effect
+from experiment_impact_tracker.emissions.common import get_realtime_carbon_source
 from pylatex import (Axis, Document, Figure, LineBreak, Math, Package, Plot,
                      Section, Subsection, Subsubsection, Table, Tabular, TikZ)
 from pylatex.utils import escape_latex
@@ -44,13 +45,20 @@ def gather_additional_info(info, logdir):
     # elementwise multiplication and sum
     time_differences_in_hours = time_differences/3600.
     power_draw_rapl_kw = df["rapl_estimated_attributable_power_draw"] / 1000.
-    kw_hr_rapl = np.multiply(time_differences_in_hours, power_draw_rapl_kw).sum()
     nvidia_power_draw_kw = df["nvidia_estimated_attributable_power_draw"] / 1000.
     # elementwise multiplication and sum
-    kw_hr_nvidia = np.multiply(time_differences_in_hours, nvidia_power_draw_kw).sum()
-    total_power = PUE * (kw_hr_nvidia + kw_hr_rapl)
-    estimated_carbon_impact_grams = total_power * \
-        info["region_carbon_intensity_estimate"]["carbonIntensity"]
+    kw_hr_nvidia = np.multiply(time_differences_in_hours, nvidia_power_draw_kw)
+    kw_hr_rapl = np.multiply(time_differences_in_hours, power_draw_rapl_kw)
+
+    total_power_per_timestep = PUE * (kw_hr_nvidia + kw_hr_rapl)
+    total_power = total_power_per_timestep.sum()
+    if "realtime_carbon_intensity" in df:
+        estimated_carbon_impact_grams_per_timestep = np.multiply(total_power_per_timestep, df["realtime_carbon_intensity"])
+        estimated_carbon_impact_grams = estimated_carbon_impact_grams_per_timestep.sum()
+    else:
+        estimated_carbon_impact_grams = total_power * \
+            info["region_carbon_intensity_estimate"]["carbonIntensity"]
+    
     estimated_carbon_impact_kg = estimated_carbon_impact_grams / 1000.0
     # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation)
     gpu_hours = np.multiply(
@@ -58,23 +66,34 @@ def gather_additional_info(info, logdir):
 
     cpu_hours = df['cpu_time_seconds'].iloc[-1]/3600.
 
-    return {
+    data = {
         "cpu_hours" : cpu_hours, 
         "gpu_hours" : gpu_hours,
         "estimated_carbon_impact_kg" : estimated_carbon_impact_kg,
         "total_power" : total_power,
-        "kw_hr_gpu" : kw_hr_nvidia,
-        "kw_hr_cpu" : kw_hr_rapl,
+        "kw_hr_gpu" : kw_hr_nvidia.sum(),
+        "kw_hr_cpu" : kw_hr_rapl.sum(),
         "exp_len_hours" : exp_len_hours
      }
 
+    if "realtime_carbon_intensity" in df:
+        data["average_realtime_carbon_intensity"] = df["realtime_carbon_intensity"].mean()
+
+    return data
 
 
+def _format_setname(setname):
+    return setname.lower().replace(" ", "_").replace("(", "").replace(")", "")
+
+def _generate_files(doc, path):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    doc.generate_tex(path)
+    doc.generate_pdf(path)
 
 
 def _generate_experiment_table(logdir, info, extended_info, setname, set_experiment_number):
     doc=Document()
-    with doc.create(Section('Experiment {} of set {}'.format(logdir, setname, set_experiment_number))):
+    with doc.create(Section('Experiment {} of set {}'.format(set_experiment_number, setname))):
         with doc.create(Subsection('Device and Version Information')):
             with doc.create(Subsubsection('CPU Information')):
                 with doc.create(Tabular('|r|p{8cm}|')) as table:
@@ -109,18 +128,25 @@ def _generate_experiment_table(logdir, info, extended_info, setname, set_experim
                     try:
                         table.add_row(['Experiment Impact Tracker Version',
                                     info["experiment_impact_tracker_version"]])
-                    except:
+                    except KeyError:
                         table.add_row(['Experiment Impact Tracker Version',
                                     info["climate_impact_tracker_version"]])
                     table.add_hline()
                     table.add_row(('Compute Region', info["region"]["id"]))
                     table.add_hline()
-                    table.add_row(('region est. gCO2eq/kWh',
-                                  str(info["region_carbon_intensity_estimate"]["carbonIntensity"])))
-                    table.add_hline()
-                    table.add_row(('Carbon Data Source', str(
-                        info["region_carbon_intensity_estimate"]["_source"])))
-                    table.add_hline()
+                    if "average_realtime_carbon_intensity" in extended_info:
+                        table.add_row(('average gCO2eq/kWh',
+                            str(extended_info["average_realtime_carbon_intensity"])))
+                        table.add_hline()
+                        table.add_row(('Carbon Data Source', "Live Data From" + get_realtime_carbon_source(info["region"]["id"])))
+                        table.add_hline()
+                    else:
+                        table.add_row(('region est. gCO2eq/kWh',
+                                    str(info["region_carbon_intensity_estimate"]["carbonIntensity"])))
+                        table.add_hline()
+                        table.add_row(('Carbon Data Source', str(
+                            info["region_carbon_intensity_estimate"]["_source"])))
+                        table.add_hline()
                     table.add_row(('Assumed PUE', str(PUE)))
                     table.add_hline()
 
@@ -152,8 +178,8 @@ def _generate_experiment_table(logdir, info, extended_info, setname, set_experim
                 table.add_row(
                     ('Final GPU-Hours (climate-impact-tracker estimate)', str(extended_info["gpu_hours"])))
                 table.add_hline()
-    doc.generate_tex(os.path.join('./', setname, '/', set_experiment_number))
-    doc.generate_pdf(os.path.join('./', setname, '/', set_experiment_number))
+
+    _generate_files(doc, os.path.join(_format_setname(setname) + '/', str(set_experiment_number)))
 
 def main(arguments):
 
@@ -165,6 +191,7 @@ def main(arguments):
     parser.add_argument('--compare_dirs', nargs = '+',
                         help = "Compare against another set of directories. E.g., Outputs all experiment appendices, aggregated results, and a statistical comparison between the two sets of experiments.", type = str)
     parser.add_argument('--experiment_set_names', nargs="*")
+    parser.add_argument('--ignore_hardware_comparison_warning', action="store_true")
     args=parser.parse_args(arguments)
     
     # TODO: add flag for summary stats instead of table for each, this should create a shorter appendix
@@ -202,8 +229,8 @@ def main(arguments):
                     values_summed = np.sum(values)
                     table.add_row((key, "{}".format(values_summed)))
                     table.add_hline()
-    doc.generate_tex(os.path.join('./', args.experiment_set_names[0], '/summary'))
-    doc.generate_pdf(os.path.join('./', args.experiment_set_names[0], '/summary'))
+
+    _generate_files(doc, os.path.join(_format_setname(args.experiment_set_names[0]), 'summary'))
 
     old_aggregate_info = aggregated_info
     aggregated_info = {}
@@ -230,8 +257,8 @@ def main(arguments):
                 with doc.create(Tabular('|r|c|')) as table:
                     table.add_hline()
                     for key, values in aggregated_info.items():
-                        delta, delta_err = get_average_treatment_effect(values, old_aggregate_info[key])
-                        _,p = run_test("Welch t-test", values, old_aggregate_info[key])
+                        delta, delta_err = get_average_treatment_effect(old_aggregate_info[key], values)
+                        _,p = run_test("Welch t-test", old_aggregate_info[key], values)
                         table.add_row((key, "{:.6g} +/- {:.6g} (stderr) (p={:.6g}, Welch's t-test)".format(delta, delta_err, p)))
                         table.add_hline()
 
@@ -239,39 +266,40 @@ def main(arguments):
                 with doc.create(Tabular('|r|c|')) as table:
                     table.add_hline()
                     for key, values in aggregated_info.items():
-                        delta = np.sum(values) - np.sum(old_aggregate_info[key])
+                        delta = np.sum(old_aggregate_info[key]) - np.sum(values) 
                         # delta_err = 1.96 * np.sqrt(np.var(values) / len(values) + \
                         #     np.var(old_aggregate_info[key]) / len(old_aggregate_info[key]))
         
                         table.add_row((key, "{}".format(delta)))
                         table.add_hline()
-        doc.generate_tex(os.path.join('./summary_{}_v_{}'.format(args.experiment_set_names[0].lower(), args.experiment_set_names[1].lower())))
-        doc.generate_pdf(os.path.join('./summary_{}_v_{}'.format(args.experiment_set_names[0].lower(), args.experiment_set_names[1].lower())))
+        _generate_files(doc, os.path.join('./summary_{}_v_{}'.format(_format_setname(args.experiment_set_names[0]), _format_setname(args.experiment_set_names[1]))))
 
+        if args.ignore_hardware_comparison_warning:
+            print("YOU ARE IGNORING HARDWARE COMPARISON WARNINGS, NOTE ANY ENERGY COMPARISON MAY NOT BE VALID BETWEEN TWO SETS OF EXPERIMENTS WITH DIFFERENT HARDWARE.")
+        else:
+            num_gpus = ([len(x) for x in gpu_infos])
+            num_gpus_old = ([len(x) for x in old_gpu_infos])
+            if sorted(num_gpus_old) != sorted(num_gpus):
+                raise NotImplementedError("You're looking to compare two sets of experiments with a different heterogeneous make-up of GPU numbers.")
 
-        num_gpus = ([len(x) for x in gpu_infos])
-        num_gpus_old = ([len(x) for x in old_gpu_infos])
-        if sorted(num_gpus_old) != sorted(num_gpus):
-            raise NotImplementedError("You're looking to compare two sets of experiments with a different heterogeneous make-up of GPU numbers.")
+            ddiff = DeepDiff(gpu_infos, old_gpu_infos, ignore_order=True)
+            if ddiff:
+                pprint(ddiff)
+                raise NotImplementedError("You're looking to compare two sets of heterogeneous GPUs that are of different compositions. This will result in uncomparable results.")
 
-        ddiff = DeepDiff(gpu_infos, old_gpu_infos, ignore_order=True)
-        if ddiff:
-            print(ddiff)
-            raise NotImplementedError("You're looking to compare two sets of heterogeneous GPUs that are of different compositions. This will result in uncomparable results.")
+            # TODO: actual Hz is never the same so maybe look at some subset of metrics or make sure average Hz is somewhat similar
+            ignore_cpu_attrs = ["hz_actual", "hz_actual_raw", "flags"]
+            for cpu_info in cpu_infos:
+                for attr in ignore_cpu_attrs:
+                    del cpu_info[attr]
+            for cpu_info in old_cpu_infos:
+                for attr in ignore_cpu_attrs:
+                    del cpu_info[attr]
 
-        # TODO: actual Hz is never the same so maybe look at some subset of metrics or make sure average Hz is somewhat similar
-        ignore_cpu_attrs = ["hz_actual", "hz_actual_raw", "flags"]
-        for cpu_info in cpu_infos:
-            for attr in ignore_cpu_attrs:
-                del cpu_info[attr]
-        for cpu_info in old_cpu_infos:
-            for attr in ignore_cpu_attrs:
-                del cpu_info[attr]
-
-        ddiff = DeepDiff(cpu_infos, old_cpu_infos, ignore_order=True)
-        if ddiff:
-            print(ddiff)
-            raise NotImplementedError("You're looking to compare two sets of heterogeneous CPUs that are of different compositions. This will result in uncomparable results.")
+            ddiff = DeepDiff(cpu_infos, old_cpu_infos, ignore_order=True)
+            if ddiff:
+                pprint(ddiff)
+                raise NotImplementedError("You're looking to compare two sets of heterogeneous CPUs that are of different compositions. This will result in uncomparable results.")
 
     # doc.generate_tex(os.path.join('./', 'impact_appendix'))
     # doc.generate_pdf(os.path.join('./', 'impact_appendix'))

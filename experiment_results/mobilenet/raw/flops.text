@@ -1,0 +1,62 @@
+mobilenet 64
+
+==================Model Analysis Report======================
+
+Doc:
+op: The nodes are operation kernel type, such as MatMul, Conv2D. Graph nodes belonging to the same type are aggregated together.
+flops: Number of float operations. Note: Please read the implementation for the math behind it.
+
+Profile:
+node name | # float_ops
+Conv2D                   3.53b float_ops (100.00%, 89.73%)
+DepthwiseConv2dNative    399.20m float_ops (10.27%, 10.14%)
+Add                      2.47m float_ops (0.13%, 0.06%)
+Mul                      2.47m float_ops (0.06%, 0.06%)
+Mean                     50.18k float_ops (0.00%, 0.00%)
+Softmax                  4.00k float_ops (0.00%, 0.00%)
+BiasAdd                    400 float_ops (0.00%, 0.00%)
+Sub                          1 float_ops (0.00%, 0.00%)
+
+======================End of Report==========================
+FLOPS 3936641457
+
+conv mobilenet 32
+
+Profile:
+node name | # float_ops
+op: The nodes are operation kernel type, such as MatMul, Conv2D. Graph nodes belonging to the same type are aggregated together.
+flops: Number of float operations. Note: Please read the implementation for the math behind it.
+
+Profile:
+node name | # float_ops
+Conv2D                   6.73b float_ops (100.00%, 99.92%)
+Mul                      2.53m float_ops (0.08%, 0.04%)
+Add                      2.53m float_ops (0.04%, 0.04%)
+Mean                     25.09k float_ops (0.00%, 0.00%)
+Softmax                  4.00k float_ops (0.00%, 0.00%)
+BiasAdd                    400 float_ops (0.00%, 0.00%)
+Sub                          1 float_ops (0.00%, 0.00%)
+
+======================End of Report==========================
+FLOPS 6739135537
+
+mobilenet 256
+
+
+Doc:
+op: The nodes are operation kernel type, such as MatMul, Conv2D. Graph nodes belonging to the same type are aggregated together.
+flops: Number of float operations. Note: Please read the implementation for the math behind it.
+
+Profile:
+node name | # float_ops
+Conv2D                   12.74b float_ops (100.00%, 94.07%)
+DepthwiseConv2dNative    798.40m float_ops (5.93%, 5.89%)
+Add                      2.64m float_ops (0.04%, 0.02%)
+Mul                      2.64m float_ops (0.02%, 0.02%)
+Mean                     100.35k float_ops (0.00%, 0.00%)
+Softmax                  4.00k float_ops (0.00%, 0.00%)
+BiasAdd                    400 float_ops (0.00%, 0.00%)
+Sub                          1 float_ops (0.00%, 0.00%)
+
+======================End of Report==========================
+FLOPS 13546189361

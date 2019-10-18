@@ -164,6 +164,7 @@ def gather_initial_info(log_dir):
     # this will be used to build a latex table later.
 
     from experiment_impact_tracker.get_region_metrics import get_current_region_info
+    from experiment_impact_tracker.py_environment.common import get_python_packages_and_versions
     import experiment_impact_tracker
     region, zone_info = get_current_region_info()
     info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
@@ -175,6 +176,7 @@ def gather_initial_info(log_dir):
         "experiment_impact_tracker_version": experiment_impact_tracker.__version__,
         "region": region,
         "experiment_start": datetime.now(),
+        "python_package_info" : get_python_packages_and_versions(),
         "region_carbon_intensity_estimate": zone_info  # kgCO2/kWh
     }
 

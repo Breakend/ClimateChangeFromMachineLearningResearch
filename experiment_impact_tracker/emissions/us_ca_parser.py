@@ -12,6 +12,8 @@ FUEL_SOURCE_CSV = 'http://www.caiso.com/outlook/SP/History/{}/fuelsource.csv'
 
 CARBON_INTENSITY_CSV = 'http://www.caiso.com/outlook/SP/History/{}/co2.csv'
 
+def get_realtime_carbon_source():
+    return CARBON_INTENSITY_CSV.format("<date>")
 
 def get_ttl_hash(seconds=3600):
     """Return the same value withing `seconds` time period"""
