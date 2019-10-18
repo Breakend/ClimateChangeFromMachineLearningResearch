@@ -154,8 +154,7 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
     power_credit_cpu = cpu_percent 
     power_credit_mem = system_wide_mem_percent
     if power_credit_cpu == 0:
-        raise ValueError(
-            "Problem retrieving CPU usage percentage to assign power credit")
+        logger.warn("Problem retrieving CPU usage percentage to assign power credit, not using any CPU. This is possibly true, but seems unlikely! See if there's a problem!")
     if power_credit_mem == 0:
         raise ValueError(
             "Problem retrieving Mem usage percentage to assign power credit")

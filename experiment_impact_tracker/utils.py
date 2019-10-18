@@ -19,25 +19,31 @@ def get_timestamp(*args, **kwargs):
     timestamp = datetime.timestamp(now)
     return timestamp
 
-def get_flop_count_tensorflow(graph=None, freeze_graph=False, name_spaces=[]):
+def get_flop_count_tensorflow(graph=None, session=None):
     import tensorflow as tf # import within function so as not to require tf for package
     from tensorflow.python.framework import graph_util
-    if graph is None:
+
+    def load_pb(pb):
+        with tf.gfile.GFile(pb, "rb") as f:
+            graph_def = tf.GraphDef()
+            graph_def.ParseFromString(f.read())
+        with tf.Graph().as_default() as graph:
+            tf.import_graph_def(graph_def, name='')
+            return graph
+
+    if graph is None and session is None:
         graph = tf.get_default_graph()
+    if session is not None:
+        graph = session.graph
 
-    if freeze_graph:
-        with tf.Session() as sess:
-            output_graph_def = graph_util.convert_variables_to_constants(sess, graph.as_graph_def(), name_spaces)
-            with tf.gfile.GFile('/tmp/tmp_flop_count_graph.pb', "wb") as f:
-                f.write(output_graph_def.SerializeToString())
-            g2 = load_pb('./graph.pb')
-            with g2.as_default():
-                flops = tf.profiler.profile(g2, options = tf.profiler.ProfileOptionBuilder.float_operation())
+    run_meta = tf.RunMetadata()
+    opts = tf.profiler.ProfileOptionBuilder.float_operation()
 
-    else:
-        flops = tf.profiler.profile(graph, options = tf.profiler.ProfileOptionBuilder.float_operation())
-    return flops.total_float_ops
+    # We use the Keras session graph in the call to the profiler.
+    flops = tf.profiler.profile(graph=graph,
+                                run_meta=run_meta, cmd='op', options=opts)
 
+    return flops.total_float_ops  # Prints the "flops" of the model.
 
 
 def processify(func):
