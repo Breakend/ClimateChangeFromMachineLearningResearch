@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Separable Convolutions (512 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Separable Convolutions (512 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}1.5677 +/{-} 0.00534132 (stderr) (p=4.1148e{-}06, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}1.43048 +/{-} 0.000802163 (stderr) (p=3.30284e{-}10, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.131999 +/{-} 0.00874369 (stderr) (p=0.00170703, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.392754 +/{-} 0.0108643 (stderr) (p=0.000287663, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.220676 +/{-} 0.00064136 (stderr) (p=2.5211e{-}14, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.0279029 +/{-} 0.0072341 (stderr) (p=0.0249348, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}1.44622 +/{-} 0.000452565 (stderr) (p=4.22038e{-}20, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}177.628 +/{-} 3.48652 (stderr) (p=3.12533e{-}05, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}4.556108333333333\\%
+\hline%
+gpu\_hours&{-}4.167034254145843\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.39044781834098596\\%
+\hline%
+total\_power&{-}1.14280430619404\\%
+\hline%
+kw\_hr\_gpu&{-}0.6429764096285907\\%
+\hline%
+kw\_hr\_cpu&{-}0.08031745505118155\\%
+\hline%
+exp\_len\_hours&{-}4.2096967478593195\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}219.89643745822468\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

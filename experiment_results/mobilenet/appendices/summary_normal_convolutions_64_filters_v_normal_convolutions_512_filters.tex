@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (64 filters) v. Normal Convolutions (512 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (64 filters) v. Normal Convolutions (512 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}4.13101 +/{-} 0.0112335 (stderr) (p=2.76849e{-}06, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}3.72762 +/{-} 0.00422954 (stderr) (p=3.44649e{-}07, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.394087 +/{-} 0.066984 (stderr) (p=0.0110925, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}1.36024 +/{-} 0.121821 (stderr) (p=0.00310824, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.693663 +/{-} 0.000399525 (stderr) (p=2.04058e{-}08, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.167249 +/{-} 0.0768738 (stderr) (p=0.0734347, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}3.78586 +/{-} 0.00397894 (stderr) (p=2.63593e{-}07, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}124.283 +/{-} 72.703 (stderr) (p=0.110923, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}12.082122222222223\\%
+\hline%
+gpu\_hours&{-}10.916038580036362\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}1.1688299341234185\\%
+\hline%
+total\_power&{-}3.999997958484282\\%
+\hline%
+kw\_hr\_gpu&{-}2.0380166266272486\\%
+\hline%
+kw\_hr\_cpu&{-}0.4936276508944491\\%
+\hline%
+exp\_len\_hours&{-}11.077042220566007\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}39.55491797173613\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

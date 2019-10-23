@@ -1,6 +1,9 @@
 import sys
 import argparse
-from experiment_impact_tracker.get_region_metrics import get_current_region_info
+from experiment_impact_tracker.get_region_metrics import get_current_region_info, get_sorted_region_infos, get_zone_information_by_coords
+from pprint import pprint
+from geopy.geocoders import Nominatim
+
 def cmdline_args():
     # Make parser object
     p = argparse.ArgumentParser(description=
@@ -9,8 +12,11 @@ def cmdline_args():
         """,
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     
-    # p.add_argument("required_positional_arg",
-    #                help="desc")
+    p.add_argument("command", help="The thing to run from: [current, top, bottom, longlat, address]")
+    p.add_argument("--n", type=int)
+    p.add_argument("--lat", type=float)
+    p.add_argument("--lon", type=float)
+    p.add_argument("--address", type=str)
     # p.add_argument("required_int", type=int,
     #                help="req number")
     # p.add_argument("--on", action="store_true",
@@ -36,9 +42,15 @@ if __name__ == '__main__':
         sys.exit(1)
         
     args = cmdline_args()
-
-    print(get_current_region_info())
-    
-
-
-
+    if args.command == "current":
+        pprint(get_current_region_info())
+    elif args.command == "top":
+        pprint(get_sorted_region_infos()[:args.n])
+    elif args.command == "bottom":
+        pprint(get_sorted_region_infos()[-args.n:])
+    elif args.command == "longlat":
+        pprint(get_zone_information_by_coords((args.lat, args.lon)))
+    elif args.command == "address":
+        geolocator = Nominatim(user_agent="experiment_impact_tracker")
+        location = geolocator.geocode(args.address)
+        pprint(get_zone_information_by_coords((location.latitude, location.longitude)))

@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Separable Convolutions (32 filters) v. Separable Convolutions (256 filters)}%
+\label{sec:Experiment Set Difference Separable Convolutions (32 filters) v. Separable Convolutions (256 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.541747 +/{-} 0.010045 (stderr) (p=2.66226e{-}08, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.52483 +/{-} 0.00172352 (stderr) (p=2.77722e{-}13, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.0476374 +/{-} 0.00247024 (stderr) (p=6.15061e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.158493 +/{-} 0.0149086 (stderr) (p=0.000368943, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.0836172 +/{-} 0.000350162 (stderr) (p=1.84516e{-}15, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.016695 +/{-} 0.00940966 (stderr) (p=0.0571253, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.498612 +/{-} 0.00899911 (stderr) (p=6.00162e{-}08, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&9.73129 +/{-} 12.6841 (stderr) (p=0.275424, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}2.0734805555555553\\%
+\hline%
+gpu\_hours&{-}2.0487065511434936\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.18649087461351782\\%
+\hline%
+total\_power&{-}0.6209723568470665\\%
+\hline%
+kw\_hr\_gpu&{-}0.3270465160311965\\%
+\hline%
+kw\_hr\_cpu&{-}0.06597396298593415\\%
+\hline%
+exp\_len\_hours&{-}1.910375138057603\\%
+\hline%
+average\_realtime\_carbon\_intensity&351.2184126510115\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

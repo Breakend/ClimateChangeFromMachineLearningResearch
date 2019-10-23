@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (256 filters) v. Normal Convolutions (512 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (256 filters) v. Normal Convolutions (512 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}3.37083 +/{-} 0.0928293 (stderr) (p=6.85786e{-}06, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}3.03825 +/{-} 0.0830272 (stderr) (p=8.70128e{-}06, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.32241 +/{-} 0.067499 (stderr) (p=0.0154236, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}1.1465 +/{-} 0.127305 (stderr) (p=0.00245705, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.57853 +/{-} 0.0139011 (stderr) (p=6.14446e{-}06, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.147101 +/{-} 0.0779388 (stderr) (p=0.0885978, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}3.08654 +/{-} 0.0847208 (stderr) (p=8.89323e{-}06, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&22.1143 +/{-} 82.315 (stderr) (p=0.692566, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}9.196841666666668\\%
+\hline%
+gpu\_hours&{-}8.291988301727308\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.888839360688651\\%
+\hline%
+total\_power&{-}3.185380620158746\\%
+\hline%
+kw\_hr\_gpu&{-}1.5989689398009088\\%
+\hline%
+kw\_hr\_cpu&{-}0.417094743843867\\%
+\hline%
+exp\_len\_hours&{-}8.420039820869762\\%
+\hline%
+average\_realtime\_carbon\_intensity&379.38785151329193\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

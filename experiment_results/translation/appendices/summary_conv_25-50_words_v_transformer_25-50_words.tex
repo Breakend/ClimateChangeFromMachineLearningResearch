@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Conv (25{-}50 words) v. Transformer (25{-}50 words)}%
+\label{sec:Experiment Set Difference Conv (25{-}50 words) v. Transformer (25{-}50 words)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.0275006 +/{-} 0.00929442 (stderr) (p=0.00513853, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.0625617 +/{-} 0.00191161 (stderr) (p=1.92615e{-}07, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.00925278 +/{-} 0.00208604 (stderr) (p=0.00096178, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.0243416 +/{-} 0.00659155 (stderr) (p=0.00231153, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.00861176 +/{-} 0.000590999 (stderr) (p=1.76071e{-}07, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.0067943 +/{-} 0.00426551 (stderr) (p=0.0487853, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.0410923 +/{-} 0.00923026 (stderr) (p=0.00100031, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}8.92749 +/{-} 8.68533 (stderr) (p=0.126273, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.13750277777777775\\%
+\hline%
+gpu\_hours&{-}0.31280831280139854\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.04626388385575243\\%
+\hline%
+total\_power&{-}0.12170788432447954\\%
+\hline%
+kw\_hr\_gpu&{-}0.04305878789640666\\%
+\hline%
+kw\_hr\_cpu&{-}0.03397151863807409\\%
+\hline%
+exp\_len\_hours&{-}0.2054614167080986\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}44.637450771513386\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

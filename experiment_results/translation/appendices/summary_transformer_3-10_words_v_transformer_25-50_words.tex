@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Transformer (3{-}10 words) v. Transformer (25{-}50 words)}%
+\label{sec:Experiment Set Difference Transformer (3{-}10 words) v. Transformer (25{-}50 words)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.270477 +/{-} 0.00199311 (stderr) (p=6.31722e{-}10, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.240519 +/{-} 0.0019161 (stderr) (p=4.6659e{-}10, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.0246474 +/{-} 0.00204375 (stderr) (p=2.46912e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.0672016 +/{-} 0.00649084 (stderr) (p=5.12301e{-}05, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.030893 +/{-} 0.000287623 (stderr) (p=1.01822e{-}09, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.0116397 +/{-} 0.00426262 (stderr) (p=0.00863053, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.268833 +/{-} 0.00199048 (stderr) (p=4.50651e{-}10, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}30.7896 +/{-} 9.31069 (stderr) (p=0.000821879, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}1.3523833333333335\\%
+\hline%
+gpu\_hours&{-}1.2025934786925934\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.12323679386487159\\%
+\hline%
+total\_power&{-}0.33600820451063107\\%
+\hline%
+kw\_hr\_gpu&{-}0.15446508208424514\\%
+\hline%
+kw\_hr\_cpu&{-}0.058198338492103645\\%
+\hline%
+exp\_len\_hours&{-}1.344166325065825\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}153.9478065954861\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

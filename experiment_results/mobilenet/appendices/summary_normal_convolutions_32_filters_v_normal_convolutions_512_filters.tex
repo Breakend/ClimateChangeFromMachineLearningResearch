@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Normal Convolutions (512 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Normal Convolutions (512 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}4.21296 +/{-} 0.0112279 (stderr) (p=2.71092e{-}06, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}3.79882 +/{-} 0.00420878 (stderr) (p=4.09807e{-}07, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.398028 +/{-} 0.0669836 (stderr) (p=0.0108781, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}1.38287 +/{-} 0.1218 (stderr) (p=0.00301476, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.705624 +/{-} 0.000617654 (stderr) (p=6.59306e{-}18, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.169612 +/{-} 0.076859 (stderr) (p=0.0716607, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}3.86166 +/{-} 0.00395138 (stderr) (p=3.4295e{-}07, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}134.438 +/{-} 72.5852 (stderr) (p=0.0974147, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}12.491872222222222\\%
+\hline%
+gpu\_hours&{-}11.272041872501935\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}1.1885333947215724\\%
+\hline%
+total\_power&{-}4.113163301847514\\%
+\hline%
+kw\_hr\_gpu&{-}2.0978228869000985\\%
+\hline%
+kw\_hr\_cpu&{-}0.5054450256616196\\%
+\hline%
+exp\_len\_hours&{-}11.456001194583044\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}90.32647994091212\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

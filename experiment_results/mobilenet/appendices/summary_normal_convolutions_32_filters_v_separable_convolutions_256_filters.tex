@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Separable Convolutions (256 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Separable Convolutions (256 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.561753 +/{-} 0.00190472 (stderr) (p=4.91016e{-}09, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.513236 +/{-} 0.000690664 (stderr) (p=1.04697e{-}14, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.0489215 +/{-} 0.00247062 (stderr) (p=5.65586e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.153765 +/{-} 0.0149174 (stderr) (p=0.00039922, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.0815143 +/{-} 0.000515515 (stderr) (p=6.53664e{-}12, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.0158056 +/{-} 0.00941768 (stderr) (p=0.0649099, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.518201 +/{-} 0.000659542 (stderr) (p=3.0111e{-}15, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}146.069 +/{-} 12.405 (stderr) (p=0.000246739, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}2.1735083333333334\\%
+\hline%
+gpu\_hours&{-}1.9907359593036877\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.19291152907734993\\%
+\hline%
+total\_power&{-}0.5973327098230532\\%
+\hline%
+kw\_hr\_gpu&{-}0.31653195054264727\\%
+\hline%
+kw\_hr\_cpu&{-}0.0615267265605509\\%
+\hline%
+exp\_len\_hours&{-}2.0083224370744497\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}427.78240220585735\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

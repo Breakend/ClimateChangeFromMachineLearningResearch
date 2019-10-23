@@ -29,3 +29,7 @@ def get_current_location():
 
 def get_current_region_info():
     return get_zone_information_by_coords(get_current_location())
+
+def get_sorted_region_infos():
+    zone_infos = [(key, value['carbonIntensity']) for key, value in ZONE_INFO.items()]
+    return sorted(zone_infos, key=lambda x: x[1])

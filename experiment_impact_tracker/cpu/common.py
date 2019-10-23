@@ -3,9 +3,19 @@ from .exceptions import CPUAttributeAssertionError
 
 
 def get_my_cpu_info():
+    """ Gather current cpu hardware info for this machine.
+    
+    Returns:
+        dict : info about cpu
+    """
     return cpuinfo.get_cpu_info()
 
 def get_hz_actual(*args, **kwargs):
+    """ Gets the current effective Hz of the CPU
+    
+    Returns:
+        str : Hz
+    """
     return cpuinfo.get_cpu_info()['hz_actual']
 
 def assert_cpus_by_attributes(attributes_set):

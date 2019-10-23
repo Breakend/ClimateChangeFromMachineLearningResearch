@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (64 filters) v. Separable Convolutions (32 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (64 filters) v. Separable Convolutions (32 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&0.0619444 +/{-} 0.00988424 (stderr) (p=0.000378405, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&0.0827948 +/{-} 0.0017077 (stderr) (p=5.86524e{-}09, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&0.00265656 +/{-} 0.000262798 (stderr) (p=1.04893e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&0.027361 +/{-} 0.00238609 (stderr) (p=2.60113e{-}05, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&0.0140642 +/{-} 0.000317831 (stderr) (p=7.25577e{-}09, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&0.00325292 +/{-} 0.00156225 (stderr) (p=0.0215201, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&0.0562023 +/{-} 0.00900051 (stderr) (p=0.000378166, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}145.646 +/{-} 5.17605 (stderr) (p=3.66011e{-}10, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&0.3097222222222222\\%
+\hline%
+gpu\_hours&0.41397388430537985\\%
+\hline%
+estimated\_carbon\_impact\_kg&0.013282806134321652\\%
+\hline%
+total\_power&0.13680499038724564\\%
+\hline%
+kw\_hr\_gpu&0.07032082576139917\\%
+\hline%
+kw\_hr\_cpu&0.01626461119255377\\%
+\hline%
+exp\_len\_hours&0.2810116750001908\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}728.2292528876928\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

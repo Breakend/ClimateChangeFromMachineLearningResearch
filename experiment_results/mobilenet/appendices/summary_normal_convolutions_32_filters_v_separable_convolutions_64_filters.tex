@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Separable Convolutions (64 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Separable Convolutions (64 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.0525533 +/{-} 0.000835423 (stderr) (p=3.59909e{-}11, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.0484195 +/{-} 0.000715373 (stderr) (p=8.14262e{-}12, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.00581469 +/{-} 0.000191947 (stderr) (p=7.61513e{-}10, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.0111697 +/{-} 0.000640834 (stderr) (p=1.7727e{-}06, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.00747108 +/{-} 0.000491069 (stderr) (p=6.38774e{-}06, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&0.000401636 +/{-} 0.000399848 (stderr) (p=0.152394, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.0494645 +/{-} 0.000757861 (stderr) (p=3.1103e{-}11, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}140.754 +/{-} 4.48404 (stderr) (p=1.27138e{-}07, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.2627666666666667\\%
+\hline%
+gpu\_hours&{-}0.2420974741058547\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.02907345934182793\\%
+\hline%
+total\_power&{-}0.05584861222099849\\%
+\hline%
+kw\_hr\_gpu&{-}0.03735540389980939\\%
+\hline%
+kw\_hr\_cpu&0.0020081809751268057\\%
+\hline%
+exp\_len\_hours&{-}0.24732229669888817\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}703.7697691374099\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

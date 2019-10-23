@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (64 filters) v. Separable Convolutions (64 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (64 filters) v. Separable Convolutions (64 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&0.0293967 +/{-} 0.000908018 (stderr) (p=8.17303e{-}11, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&0.0227812 +/{-} 0.000828837 (stderr) (p=5.2295e{-}11, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.001874 +/{-} 0.000297446 (stderr) (p=1.14674e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&0.0114633 +/{-} 0.00236682 (stderr) (p=0.00100897, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&0.00449017 +/{-} 0.000138823 (stderr) (p=1.69411e{-}11, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&0.00276511 +/{-} 0.00155992 (stderr) (p=0.0359293, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&0.0263273 +/{-} 0.000890465 (stderr) (p=3.18017e{-}11, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}130.6 +/{-} 6.10092 (stderr) (p=2.79336e{-}10, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&0.14698333333333324\\%
+\hline%
+gpu\_hours&0.11390581835971936\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.009369998743674168\\%
+\hline%
+total\_power&0.05731673114223382\\%
+\hline%
+kw\_hr\_gpu&0.022450856373040548\\%
+\hline%
+kw\_hr\_cpu&0.013825555742297322\\%
+\hline%
+exp\_len\_hours&0.1316366773181492\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}652.9982071682339\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

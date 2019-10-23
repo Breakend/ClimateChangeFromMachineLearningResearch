@@ -16,7 +16,8 @@ from . import rapl
 
 
 def get_and_cache_cpu_max_tdp_from_intel():
-    # Realized this isn't really worth anything because TDP isn't a reliable estimator of power output
+    """ Goes to Intel's website and pulls information about TDP.
+    """
     cpu_brand = cpuinfo.get_cpu_info()['brand'].split(' ')[2]
     if os.path.exists(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cpuinfocache/{}'.format(cpu_brand))):
         with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cpuinfocache/{}'.format(cpu_brand)), 'r') as f:
@@ -46,6 +47,20 @@ _timer = getattr(time, 'monotonic', time.time)
 
 
 def get_rapl_power(pid_list, logger=None, **kwargs):
+    """ Gather's CPU information from RAPL.
+    
+    Args:
+        pid_list ([int]): List of process ID's to attribute power to.
+        logger (optional): Logger to use when logging information. Defaults to None.
+    
+    Raises:
+        NotImplementedError: If an unexpected top-level domain is encountered in RAPL information.
+        ValueError: If no memory is used by the processes. This seems highly unlikely if not impossible and is probably a bug.
+        ValueError: If RAPL power estimates are coming back 0. This is unlikely if not impossible so is probably an error.
+    
+    Returns:
+        dict: Information about CPU
+    """
     s1 = rapl.RAPLMonitor.sample()
     time.sleep(2)
     s2 = rapl.RAPLMonitor.sample()
@@ -70,7 +85,7 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         # The following relationship holds: PP0 + PP1 <= PKG. DRAM is independent of the other three domains.
         # Most processors come in two packages so top level domains shold be package-1 and package-0
         if "package" not in domain.name:
-            raise ValueError(
+            raise NotImplementedError(
                 "Unexpected top level domain for RAPL package. Not yet supported.")
 
         total_intel_power += power
@@ -135,15 +150,12 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         # TODO: I'm not sure if this will get that in all configurations of hardware.
         absolute_cpu_percent += delta_proc / float(delta_time)
 
-        # TODO: do we really need to do anything with the time units?
         cpu_percent += attributable_compute
 
         # only care about cpu_times for latest number
         cpu_times += (pt2.user) + (pt2.system)
         mem_infos.append(p.memory_full_info())
 
-    system_wide_cpu_percent = psutil.cpu_percent(interval=1)
-    # TODO: how can we get system wide memory usage
     total_physical_memory = psutil.virtual_memory()
     # what percentage of used memory can be attributed to this process
     # uss is unique memory to this process (if you killed it now that would be freed). PSS is shared memory split evenly among processes using the memory
@@ -151,7 +163,7 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
     # and the shared bits we give credit based on how many processes share those bits
     system_wide_mem_percent = np.sum([float(x.uss + x.pss) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_infos])
 
-    power_credit_cpu = cpu_percent 
+    power_credit_cpu = cpu_percent
     power_credit_mem = system_wide_mem_percent
     if power_credit_cpu == 0:
         logger.warn("Problem retrieving CPU usage percentage to assign power credit, not using any CPU. This is possibly true, but seems unlikely! See if there's a problem!")
