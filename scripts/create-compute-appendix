@@ -325,10 +325,12 @@ def main(arguments):
             ignore_cpu_attrs = ["hz_actual", "hz_actual_raw", "flags"]
             for cpu_info in cpu_infos:
                 for attr in ignore_cpu_attrs:
-                    del cpu_info[attr]
+                    if attr in cpu_info:
+                        del cpu_info[attr]
             for cpu_info in old_cpu_infos:
                 for attr in ignore_cpu_attrs:
-                    del cpu_info[attr]
+                    if attr in cpu_info:
+                        del cpu_info[attr]
 
             ddiff = DeepDiff(cpu_infos, old_cpu_infos, ignore_order=True)
             if ddiff:
