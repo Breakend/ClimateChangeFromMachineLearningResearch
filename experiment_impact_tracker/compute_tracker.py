@@ -61,7 +61,10 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
             # we already got that info from a multi-return function call
             continue
 
-        results = header["routing"]["function"](process_ids, logger=logger, region=initial_info['region']['id'])
+        start = time.time()
+        results = header["routing"]["function"](process_ids, logger=logger, region=initial_info['region']['id'], log_dir=log_dir)
+        end = time.time()
+        print("Datapoint {} took {} seconds".format(header["name"], (end-start)))
 
         if isinstance(results, dict):
             # if we return a dict of results, could account for multiple headers

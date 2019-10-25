@@ -5,6 +5,7 @@ from experiment_impact_tracker.cpu import rapl
 from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
 from experiment_impact_tracker.utils import *
 from experiment_impact_tracker.emissions.common import get_realtime_carbon
+from experiment_impact_tracker.disk.common import measure_disk_speed_at_dir
 
 DATA_HEADERS = [
     {
@@ -137,6 +138,14 @@ DATA_HEADERS = [
         "compatability" : ["realtime_carbon"],
         "routing" : {
             "function" : get_realtime_carbon
+        }
+    },
+    {
+        "name" : "disk_write_speed",
+        "description" : "The write speed to the disk estimated over .5 seconds.",
+        "compatability" : ["all"],
+        "routing" : {
+            "function" : measure_disk_speed_at_dir
         }
     }
 ]
