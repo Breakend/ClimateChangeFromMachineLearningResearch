@@ -61,8 +61,51 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
     Returns:
         dict: Information about CPU
     """
+    # start an initial sample to maximize time between samples without artificial waits
     s1 = rapl.RAPLMonitor.sample()
-    time.sleep(2)
+
+    cpu_percent = 0
+    absolute_cpu_percent = 0
+    cpu_times = 0
+    mem_infos = []
+    print(pid_list)
+
+    infos1 = []
+    infos2 = []
+
+    process_list = []
+
+    # gather processes as process objects
+    for process in pid_list:
+        try:
+            p = psutil.Process(process)
+            process_list.append(p)
+        except psutil.NoSuchProcess:
+            if logger is not None:
+                logger.warn(
+                    "Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
+            continue
+
+    # Get initial times and cpu info
+    for p in process_list:
+        # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107
+        # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
+        # power credits accordingly
+        st1 = _timer()
+        # units in terms of cpu-time, so we need the cpu in the last time period that are for the process only
+        system_wide_pt1 = psutil.cpu_times()
+        pt1 = p.cpu_times()
+        infos1.append((st1, system_wide_pt1, pt1))
+
+    time.sleep(.5)
+
+    for p in process_list:
+        st2 = _timer()
+        system_wide_pt2 = psutil.cpu_times()
+        pt2 = p.cpu_times()
+        infos2.append((st2, system_wide_pt2, pt2))
+
+    # now is a good time to get the power samples that we got the process times for
     s2 = rapl.RAPLMonitor.sample()
     diff = s2 - s1
     total_intel_power = 0
@@ -108,31 +151,10 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         raise ValueError(
             "Don't support credit assignment to Intel RAPL GPU yet.")
 
-    cpu_percent = 0
-    absolute_cpu_percent = 0
-    cpu_times = 0
-    mem_infos = []
-    print(pid_list)
-    for process in pid_list:
-        try:
-            p = psutil.Process(process)
-        except psutil.NoSuchProcess:
-            if logger is not None:
-                logger.warn(
-                    "Process with pid {} used to be part of this process chain, but was shut down. Skipping.")
-            continue
-        # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107
-        # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
-        # power credits accordingly
-        st1 = _timer()
-        # units in terms of cpu-time, so we need the cpu in the last time period that are for the process only
-        system_wide_pt1 = psutil.cpu_times()
-        pt1 = p.cpu_times()
-        time.sleep(1)
-        st2 = _timer()
-        system_wide_pt2 = psutil.cpu_times()
-        pt2 = p.cpu_times()
-
+    for i, p in enumerate(process_list):
+        st1, system_wide_pt1, pt1 = infos1[i]
+        st2, system_wide_pt2, pt2 = infos2[i]
+        
         # change in cpu-hours process
         delta_proc = (pt2.user - pt1.user) + (pt2.system - pt1.system)
         # change in cpu-hours system

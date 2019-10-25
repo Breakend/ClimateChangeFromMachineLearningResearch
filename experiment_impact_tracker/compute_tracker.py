@@ -64,7 +64,7 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
         start = time.time()
         results = header["routing"]["function"](process_ids, logger=logger, region=initial_info['region']['id'], log_dir=log_dir)
         end = time.time()
-        print("Datapoint {} took {} seconds".format(header["name"], (end-start)))
+        logger.warn("Datapoint {} took {} seconds".format(header["name"], (end-start)))
 
         if isinstance(results, dict):
             # if we return a dict of results, could account for multiple headers
@@ -135,8 +135,8 @@ def _get_compatibilities(required_elements=[], region=None):
         compatibilities.append("nvidia")
         compatibilities.append("gpu")
 
-    print("region: {}".format(region))
-    print(is_capable_realtime_carbon_intensity(region))
+    # print("region: {}".format(region))
+    # print(is_capable_realtime_carbon_intensity(region))
     if region is not None and is_capable_realtime_carbon_intensity(region):
         compatibilities.append("realtime_carbon")
 
@@ -207,6 +207,14 @@ def load_data_into_frame(log_dir):
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     return pd.read_csv(data_path)
 
+def log_final_info(log_dir):
+    final_time = datetime.now()
+    info = load_initial_info(log_dir)
+    info["experiment_end"] = final_time
+    info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
+
+    with open(info_path, 'wb') as info_file:
+        pickle.dump(info, info_file)
 
 class ImpactTracker(object):
 
@@ -244,7 +252,7 @@ class ImpactTracker(object):
     def launch_impact_monitor(self):
         try:
             self.p, self.queue = launch_power_monitor(self.logdir, self.initial_info, self.logger)
-            atexit.register(lambda p: p.terminate(), self.p)
+            atexit.register(lambda p:  p.terminate(); log_final_info(), self.p)
         except:
             ex_type, ex_value, tb = sys.exc_info()
             self.logger.error(
