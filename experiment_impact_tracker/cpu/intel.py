@@ -67,13 +67,13 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
     cpu_percent = 0
     absolute_cpu_percent = 0
     cpu_times = 0
-    mem_infos = []
-    print(pid_list)
 
     infos1 = []
     infos2 = []
 
     process_list = []
+    mem_info_per_process = {}
+    cpu_times_per_process = {}
 
     # gather processes as process objects
     for process in pid_list:
@@ -97,7 +97,7 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         pt1 = p.cpu_times()
         infos1.append((st1, system_wide_pt1, pt1))
 
-    time.sleep(.5)
+    time.sleep(1.0)
 
     for p in process_list:
         st2 = _timer()
@@ -176,14 +176,16 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
 
         # only care about cpu_times for latest number
         cpu_times += (pt2.user) + (pt2.system)
-        mem_infos.append(p.memory_full_info())
+        cpu_times_per_process[pid_list[i]] = pt2
+        mem_info = p.memory_full_info()
+        mem_info_per_process[pid_list[i]] = mem_info
 
     total_physical_memory = psutil.virtual_memory()
     # what percentage of used memory can be attributed to this process
     # uss is unique memory to this process (if you killed it now that would be freed). PSS is shared memory split evenly among processes using the memory
     # summing these two gets us a nice fair metric for the actual memory used in the RAM hardware. The unique bits are directly attributable to the process
     # and the shared bits we give credit based on how many processes share those bits
-    system_wide_mem_percent = np.sum([float(x.uss + x.pss) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_infos])
+    system_wide_mem_percent = np.sum([float(x.uss + x.pss) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_info_per_process.values()])
 
     power_credit_cpu = cpu_percent
     power_credit_mem = system_wide_mem_percent
@@ -210,12 +212,13 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
     data_return_values_with_headers = {
         "rapl_power_draw_absolute": total_intel_power,
         "rapl_estimated_attributable_power_draw": total_attributable_power,
-        "cpu_time_seconds": cpu_times,
+        "cpu_time_seconds": cpu_times_per_process,
         "average_relative_cpu_utilization": cpu_percent,
         "absolute_cpu_utilization": absolute_cpu_percent,
         "relative_mem_usage" : system_wide_mem_percent,
-        "absolute_mem_usage" : np.sum([x.uss for x in mem_infos]),
-        "absolute_mem_percent_usage" : np.sum([float(x.uss + x.pss) / float(total_physical_memory.total)  for x in mem_infos])
+        "absolute_mem_usage" : np.sum([float(x.uss + x.pss) for x in mem_info_per_process.values()]),
+        "absolute_mem_percent_usage" : np.sum([float(x.uss + x.pss) / float(total_physical_memory.total)  for x in mem_info_per_process.values()]),
+        "mem_info_per_process" : mem_info_per_process
     }
 
     return data_return_values_with_headers

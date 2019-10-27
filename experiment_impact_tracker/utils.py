@@ -7,7 +7,7 @@ import traceback
 from datetime import datetime
 from functools import wraps
 from multiprocessing import Process, Queue
-
+import ujson
 import numpy as np
 import pandas as pd
 
@@ -92,3 +92,8 @@ def write_csv_data_to_file(file_path, data, overwrite=False):
     with open(file_path, 'w' if overwrite else 'a') as outfile:
         writer = csv.writer(outfile)
         writer.writerow(data)
+
+def write_json_data_to_file(file_path, data, overwrite=False):
+    file_path = safe_file_path(file_path)
+    with open(file_path, 'w' if overwrite else 'a') as outfile:
+        outfile.write(ujson.dumps(data) + "\n")

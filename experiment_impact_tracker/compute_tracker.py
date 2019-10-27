@@ -25,7 +25,7 @@ from experiment_impact_tracker.utils import *
 from experiment_impact_tracker.emissions.common import is_capable_realtime_carbon_intensity
 
 BASE_LOG_PATH = 'impacttracker/'
-DATAPATH = BASE_LOG_PATH + 'data.csv'
+DATAPATH = BASE_LOG_PATH + 'data.json'
 INFOPATH = BASE_LOG_PATH + 'info.pkl'
 SLEEP_TIME = 1
 PUE = 1.58
@@ -74,9 +74,8 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
             header_information[header["name"]] = results
 
     # once we have gotten all the required info through routing calls for all headers, we log it
-    data = [header_information[x["name"]] for x in required_headers]
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    write_csv_data_to_file(log_path, data)
+    write_json_data_to_file(log_path, header_information)
     return data
 
 
@@ -191,9 +190,13 @@ def gather_initial_info(log_dir):
 
     compatible_data_headers = _get_compatible_data_headers(compatibilities)
     # touch datafile to clear out any past cruft and write headers
+
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    write_csv_data_to_file(
-        data_path, [x["name"] for x in compatible_data_headers], overwrite=True)
+    if os.path.exists(data_path):
+        os.remove(data_path)
+    # write_csv_data_to_file(
+    #     data_path, [x["name"] for x in compatible_data_headers], 
+    #     overwrite=True)
     return data
 
 
