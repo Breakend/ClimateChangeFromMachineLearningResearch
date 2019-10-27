@@ -255,7 +255,9 @@ class ImpactTracker(object):
     def launch_impact_monitor(self):
         try:
             self.p, self.queue = launch_power_monitor(self.logdir, self.initial_info, self.logger)
-            atexit.register(lambda p:  p.terminate(); log_final_info(), self.p)
+            def _terminate_monitor_and_log_final_info(p):
+                p.terminate(); log_final_info(self.logdir)
+            atexit.register(_terminate_monitor_and_log_final_info, self.p)
         except:
             ex_type, ex_value, tb = sys.exc_info()
             self.logger.error(

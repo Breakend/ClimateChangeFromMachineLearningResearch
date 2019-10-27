@@ -43,4 +43,4 @@ for t in range(1000):
   # Update weights using gradient descent
   w1 -= learning_rate * grad_w1
   w2 -= learning_rate * grad_w2
-  tracker.get_latest_info_and_check_for_errors()
+  #tracker.get_latest_info_and_check_for_errors()
