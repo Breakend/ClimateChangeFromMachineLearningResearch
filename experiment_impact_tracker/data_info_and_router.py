@@ -1,5 +1,5 @@
 from experiment_impact_tracker.cpu.intel import get_rapl_power
-from experiment_impact_tracker.cpu.common import get_hz_actual
+from experiment_impact_tracker.cpu.common import get_cpu_freq, get_cpu_count_adjusted_load_avg
 from experiment_impact_tracker.cpu import rapl
 
 from experiment_impact_tracker.gpu.nvidia import get_nvidia_gpu_power
@@ -125,11 +125,19 @@ DATA_HEADERS = [
         }
     },
     {
-        "name": "hz_actual",
-        "description": "The current hz of the CPU.",
+        "name": "cpu_count_adjusted_average_load",
+        "description": "Measures the average load on the system for the past 5, 10, 15 minutes divided by number of CPUs (wrapper for psutil method). As fraction (percentage needs multiplication by 100)",
         "compatability": ["all"],
         "routing": {
-            "function": get_hz_actual
+            "function": get_cpu_count_adjusted_load_avg 
+        }
+    },
+    {
+        "name": "cpu_freq",
+        "description": "Get cpu frequency including realtime in MHz.",
+        "compatability": ["linux"],
+        "routing": {
+            "function": get_cpu_freq 
         }
     },
     {

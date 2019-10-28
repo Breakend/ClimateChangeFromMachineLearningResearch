@@ -91,19 +91,21 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         # Modifying code https://github.com/giampaolo/psutil/blob/c10df5aa04e1ced58d19501fa42f08c1b909b83d/psutil/__init__.py#L1102-L1107
         # We want relative percentage of CPU used so we ignore the multiplier by number of CPUs, we want a number from 0-1.0 to give
         # power credits accordingly
-        st1 = _timer()
+        st11 = _timer()
         # units in terms of cpu-time, so we need the cpu in the last time period that are for the process only
         system_wide_pt1 = psutil.cpu_times()
+        st12 = _timer()
         pt1 = p.cpu_times()
-        infos1.append((st1, system_wide_pt1, pt1))
+        infos1.append((st11, st12, system_wide_pt1, pt1))
 
-    time.sleep(1.0)
+    time.sleep(2.0)
 
     for p in process_list:
-        st2 = _timer()
-        system_wide_pt2 = psutil.cpu_times()
+        st21 = _timer()
         pt2 = p.cpu_times()
-        infos2.append((st2, system_wide_pt2, pt2))
+        st22 = _timer()
+        system_wide_pt2 = psutil.cpu_times()
+        infos2.append((st21,st22, system_wide_pt2, pt2))
 
     # now is a good time to get the power samples that we got the process times for
     s2 = rapl.RAPLMonitor.sample()
@@ -152,17 +154,19 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
             "Don't support credit assignment to Intel RAPL GPU yet.")
 
     for i, p in enumerate(process_list):
-        st1, system_wide_pt1, pt1 = infos1[i]
-        st2, system_wide_pt2, pt2 = infos2[i]
+        st1, st12, system_wide_pt1, pt1 = infos1[i]
+        st2, st22, system_wide_pt2, pt2 = infos2[i]
         
         # change in cpu-hours process
         delta_proc = (pt2.user - pt1.user) + (pt2.system - pt1.system)
+        cpu_util_process = delta_proc / float(st2 - st1)
         # change in cpu-hours system
         delta_proc2 = (system_wide_pt2.user - system_wide_pt1.user) + \
-            (system_wide_pt2.system - system_wide_pt1.system)
+            (system_wide_pt2.system - system_wide_pt1.system) 
+        cpu_util_system = delta_proc2 / float(st22 - st12)
 
         # percent of cpu-hours in time frame attributable to this process (e.g., attributable compute)
-        attributable_compute = delta_proc / float(delta_proc2)
+        attributable_compute = cpu_util_process / cpu_util_system 
 
         delta_time = st2 - st1
 
@@ -176,16 +180,16 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
 
         # only care about cpu_times for latest number
         cpu_times += (pt2.user) + (pt2.system)
-        cpu_times_per_process[pid_list[i]] = pt2
+        cpu_times_per_process[pid_list[i]] = pt2._asdict()
         mem_info = p.memory_full_info()
-        mem_info_per_process[pid_list[i]] = mem_info
+        mem_info_per_process[pid_list[i]] = mem_info._asdict()
 
     total_physical_memory = psutil.virtual_memory()
     # what percentage of used memory can be attributed to this process
     # uss is unique memory to this process (if you killed it now that would be freed). PSS is shared memory split evenly among processes using the memory
     # summing these two gets us a nice fair metric for the actual memory used in the RAM hardware. The unique bits are directly attributable to the process
     # and the shared bits we give credit based on how many processes share those bits
-    system_wide_mem_percent = np.sum([float(x.uss + x.pss) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_info_per_process.values()])
+    system_wide_mem_percent = np.sum([float(x["uss"] + x["pss"]) / float(total_physical_memory.total - total_physical_memory.available) for x in mem_info_per_process.values()])
 
     power_credit_cpu = cpu_percent
     power_credit_mem = system_wide_mem_percent
@@ -216,8 +220,8 @@ def get_rapl_power(pid_list, logger=None, **kwargs):
         "average_relative_cpu_utilization": cpu_percent,
         "absolute_cpu_utilization": absolute_cpu_percent,
         "relative_mem_usage" : system_wide_mem_percent,
-        "absolute_mem_usage" : np.sum([float(x.uss + x.pss) for x in mem_info_per_process.values()]),
-        "absolute_mem_percent_usage" : np.sum([float(x.uss + x.pss) / float(total_physical_memory.total)  for x in mem_info_per_process.values()]),
+        "absolute_mem_usage" : np.sum([float(x["uss"] + x["pss"]) for x in mem_info_per_process.values()]),
+        "absolute_mem_percent_usage" : np.sum([float(x["uss"] + x["pss"]) / float(total_physical_memory.total)  for x in mem_info_per_process.values()]),
         "mem_info_per_process" : mem_info_per_process
     }
 

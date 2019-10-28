@@ -1,4 +1,5 @@
 import cpuinfo
+import psutil
 from .exceptions import CPUAttributeAssertionError
 
 
@@ -8,7 +9,9 @@ def get_my_cpu_info():
     Returns:
         dict : info about cpu
     """
-    return cpuinfo.get_cpu_info()
+    most_info = cpuinfo.get_cpu_info()
+    most_info["usable_cpus"] = len(psutil.Process().cpu_affinity())
+    return most_info
 
 def get_hz_actual(*args, **kwargs):
     """ Gets the current effective Hz of the CPU
@@ -17,6 +20,14 @@ def get_hz_actual(*args, **kwargs):
         str : Hz
     """
     return cpuinfo.get_cpu_info()['hz_actual']
+
+def get_cpu_freq(*args, **kwargs):
+    """ Returns all cpu freq of all cpu's available
+    """
+    return [x._asdict() for x in psutil.cpu_freq(percpu=True)]
+
+def get_cpu_count_adjusted_load_avg(*args, **kwargs):
+    return [x / psutil.cpu_count() for x in psutil.getloadavg()]
 
 def assert_cpus_by_attributes(attributes_set):
     """Assert that you're running on CPUs with a certain set of attributes.

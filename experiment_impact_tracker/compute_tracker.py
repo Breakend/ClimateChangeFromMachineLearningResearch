@@ -10,9 +10,12 @@ from datetime import datetime
 from queue import Empty as EmptyQueueException
 from subprocess import PIPE, Popen
 from sys import platform
+from pathlib import Path
+
 
 import numpy as np
 import pandas as pd
+import ujson as json
 
 import psutil
 from experiment_impact_tracker.cpu import rapl
@@ -34,10 +37,13 @@ PUE = 1.58
 def read_latest_stats(log_dir):
     log_path = os.path.join(log_dir, DATAPATH)
 
-    last_line = str(subprocess.check_output(["tail", "-1", log_path]))
+    try:
+        last_line = subprocess.check_output(["tail", "-1", log_path])
+    except:
+        return None
 
     if last_line:
-        return last_line.split(",")
+        return json.loads(last_line)
     else:
         return None
 
@@ -46,6 +52,7 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
     current_process = psutil.Process(os.getppid())
     process_ids = [current_process.pid] + \
         [child.pid for child in current_process.children(recursive=True)]
+    process_ids = list(set(process_ids)) # dedupe so that we don't double count by accident
     compatibilities = _get_compatibilities(region=initial_info['region']['id'])
 
     required_headers = _get_compatible_data_headers(compatibilities)
@@ -72,11 +79,11 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
                 header_information[header_name] = item
         else:
             header_information[header["name"]] = results
-
+    header_information["process_ids"] = process_ids
     # once we have gotten all the required info through routing calls for all headers, we log it
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     write_json_data_to_file(log_path, header_information)
-    return data
+    return header_information
 
 
 @processify
@@ -194,6 +201,8 @@ def gather_initial_info(log_dir):
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
     if os.path.exists(data_path):
         os.remove(data_path)
+
+    Path(data_path).touch()
     # write_csv_data_to_file(
     #     data_path, [x["name"] for x in compatible_data_headers], 
     #     overwrite=True)

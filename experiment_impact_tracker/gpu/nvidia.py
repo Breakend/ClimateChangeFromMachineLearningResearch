@@ -163,7 +163,7 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
         # what's the total absolute SM for this gpu across all accessible processes
         percentage_of_gpu_used_by_all_processes = float(
             gpu_based_processes['sm'].sum())
-
+        per_gpu_power_draw = {}
         for info in processes.findall('process_info'):
             pid = info.findall('pid')[0].text
             process_name = info.findall('process_name')[0].text
@@ -203,6 +203,7 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
 
                 power += sm_relative_percent * \
                     float(power_draw.replace("W", ""))
+                per_gpu_power_draw[gpu_id] = float(power_draw.replace("W", ""))
                 # want a proportion value rather than percentage
                 per_gpu_absolute_percent_usage[gpu_id] += (
                     sm_absolute_percent / 100.0)
@@ -221,8 +222,10 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
         "nvidia_draw_absolute": absolute_power,
         "nvidia_estimated_attributable_power_draw": power,
         "average_gpu_estimated_utilization_absolute": average_gpu_utilization,
+        "per_gpu_average_estimated_utilization_absolute": process_percentage_used_gpu.set_index(['gpu', 'pid']).to_dict(orient='index'),
         "average_gpu_estimated_utilization_relative": average_gpu_relative_utilization,
-        "per_gpu_performance_state": per_gpu_performance_states
+        "per_gpu_performance_state": per_gpu_performance_states,
+        "per_gpu_power_draw" : per_gpu_power_draw
     }
 
     return data_return_values_with_headers
