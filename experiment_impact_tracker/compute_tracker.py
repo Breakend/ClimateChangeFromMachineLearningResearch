@@ -13,6 +13,7 @@ from sys import platform
 from pathlib import Path
 
 
+from pandas.io.json import json_normalize
 import numpy as np
 import pandas as pd
 import ujson as json
@@ -214,10 +215,15 @@ def load_initial_info(log_dir):
     with open(info_path, 'rb') as info_file:
         return pickle.load(info_file)
 
+def _read_json_file(filename):
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+        return [json.loads(line) for line in lines]
 
 def load_data_into_frame(log_dir):
     data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    return pd.read_csv(data_path)
+    json_array = _read_json_file(data_path)
+    return json_normalize(json_array), json_array
 
 def log_final_info(log_dir):
     final_time = datetime.now()
