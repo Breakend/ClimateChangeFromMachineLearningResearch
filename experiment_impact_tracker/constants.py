@@ -39,6 +39,17 @@ def _load_zone_info():
         x = json.load(f)
     return x
 
+def _load_zone_names():
+    """Loads zone name info from the json file in the package.
+    
+    Returns:
+        dict : the loaded json file
+    """
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    with open(os.path.join(dir_path, 'data/zone_names.json'), 'rt') as f:
+        x = json.load(f)
+    return x
+
 
 def load_regions_with_bounding_boxes():
     """Loads bounding boxes as shapely objects.
@@ -60,5 +71,7 @@ def load_regions_with_bounding_boxes():
     return all_geoms
 
 
+PUE = 1.58
 REGIONS_WITH_BOUNDING_BOXES = load_regions_with_bounding_boxes()
 ZONE_INFO = _load_zone_info()["fallbackZoneMixes"]
+ZONE_NAMES = _load_zone_names()

@@ -12,6 +12,9 @@ import numpy as np
 import pandas as pd
 
 import psutil
+from experiment_impact_tracker.constants import PUE
+from experiment_impact_tracker.data_utils import load_data_into_frame
+from experiment_impact_tracker.data_utils import *
 
 _timer = getattr(time, 'monotonic', time.time)
 def get_timestamp(*args, **kwargs):
@@ -81,19 +84,74 @@ def processify(func):
         return p, queue
     return wrapper
 
-def safe_file_path(file_path):
-    directory = os.path.dirname(file_path)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    return file_path
 
-def write_csv_data_to_file(file_path, data, overwrite=False):
-    file_path = safe_file_path(file_path)
-    with open(file_path, 'w' if overwrite else 'a') as outfile:
-        writer = csv.writer(outfile)
-        writer.writerow(data)
 
-def write_json_data_to_file(file_path, data, overwrite=False):
-    file_path = safe_file_path(file_path)
-    with open(file_path, 'w' if overwrite else 'a') as outfile:
-        outfile.write(ujson.dumps(data) + "\n")
+def _get_cpu_hours_from_per_process_data(json_array):
+    latest_per_pid = {}
+    for datapoint in json_array:
+        cpu_point = datapoint["cpu_time_seconds"]
+        for pid, value in cpu_point.items():
+            latest_per_pid[pid] = value["user"] + value["system"]
+    return sum(latest_per_pid.values())
+
+def gather_additional_info(info, logdir):
+    df, json_array = load_data_into_frame(logdir)
+    cpu_seconds = _get_cpu_hours_from_per_process_data(json_array)
+    num_gpus = len(info["gpu_info"])
+    exp_len = datetime.timestamp(info["experiment_end"]) - \
+        datetime.timestamp(info["experiment_start"])
+    exp_len_hours = exp_len/3600.
+    # integrate power
+    # https://electronics.stackexchange.com/questions/237025/converting-watt-values-over-time-to-kwh
+    # multiply by carbon intensity to get Kg Carbon eq
+    time_differences = df["timestamp"].diff()
+    time_differences[0] = df["timestamp"][0] - \
+        datetime.timestamp(info["experiment_start"])
+    
+    # Add final timestamp and extrapolate last row of power estimates
+    time_differences.loc[len(time_differences)] = datetime.timestamp(info["experiment_end"]) - df["timestamp"][len(df["timestamp"]) - 1]
+
+    # elementwise multiplication and sum
+    time_differences_in_hours = time_differences/3600.
+    power_draw_rapl_kw = df["rapl_estimated_attributable_power_draw"] / 1000.
+    nvidia_power_draw_kw = df["nvidia_estimated_attributable_power_draw"] / 1000.
+    nvidia_power_draw_kw.loc[len(nvidia_power_draw_kw)] = nvidia_power_draw_kw.loc[len(nvidia_power_draw_kw)-1] 
+    power_draw_rapl_kw.loc[len(power_draw_rapl_kw)] = power_draw_rapl_kw.loc[len(power_draw_rapl_kw)-1]
+    gpu_absolute_util = df["average_gpu_estimated_utilization_absolute"] 
+    gpu_absolute_util.loc[len(gpu_absolute_util)] = gpu_absolute_util.loc[len(gpu_absolute_util)-1]
+    # elementwise multiplication and sum
+    kw_hr_nvidia = np.multiply(time_differences_in_hours, nvidia_power_draw_kw)
+    kw_hr_rapl = np.multiply(time_differences_in_hours, power_draw_rapl_kw)
+
+    total_power_per_timestep = PUE * (kw_hr_nvidia + kw_hr_rapl)
+    total_power = total_power_per_timestep.sum()
+    if "realtime_carbon_intensity" in df:
+        realtime_carbon = df["realtime_carbon_intensity"]
+        realtime_carbon.loc[len(realtime_carbon)] = realtime_carbon.loc[len(realtime_carbon)-1]
+        estimated_carbon_impact_grams_per_timestep = np.multiply(total_power_per_timestep, realtime_carbon)
+        estimated_carbon_impact_grams = estimated_carbon_impact_grams_per_timestep.sum()
+    else:
+        estimated_carbon_impact_grams = total_power * \
+            info["region_carbon_intensity_estimate"]["carbonIntensity"]
+    
+    estimated_carbon_impact_kg = estimated_carbon_impact_grams / 1000.0
+    # GPU-hours percent utilization * length of time utilized (assumes absolute utliziation)
+    gpu_hours = np.multiply(
+        time_differences_in_hours, gpu_absolute_util).sum() * num_gpus
+
+    cpu_hours = cpu_seconds/3600.
+
+    data = {
+        "cpu_hours" : cpu_hours, 
+        "gpu_hours" : gpu_hours,
+        "estimated_carbon_impact_kg" : estimated_carbon_impact_kg,
+        "total_power" : total_power,
+        "kw_hr_gpu" : kw_hr_nvidia.sum(),
+        "kw_hr_cpu" : kw_hr_rapl.sum(),
+        "exp_len_hours" : exp_len_hours
+     }
+
+    if "realtime_carbon_intensity" in df:
+        data["average_realtime_carbon_intensity"] = df["realtime_carbon_intensity"].mean()
+
+    return data

@@ -20,20 +20,17 @@ import ujson as json
 
 import psutil
 from experiment_impact_tracker.cpu import rapl
+from experiment_impact_tracker.data_utils import *
 from experiment_impact_tracker.cpu.common import get_my_cpu_info
 from experiment_impact_tracker.cpu.intel import get_rapl_power
 from experiment_impact_tracker.data_info_and_router import DATA_HEADERS
 from experiment_impact_tracker.gpu.nvidia import (get_gpu_info,
                                                   get_nvidia_gpu_power)
-from experiment_impact_tracker.utils import *
+from experiment_impact_tracker.utils import write_json_data_to_file, safe_file_path, processify, get_timestamp
 from experiment_impact_tracker.emissions.common import is_capable_realtime_carbon_intensity
 
-BASE_LOG_PATH = 'impacttracker/'
-DATAPATH = BASE_LOG_PATH + 'data.json'
-INFOPATH = BASE_LOG_PATH + 'info.pkl'
-SLEEP_TIME = 1
-PUE = 1.58
 
+SLEEP_TIME = 1
 
 def read_latest_stats(log_dir):
     log_path = os.path.join(log_dir, DATAPATH)
@@ -210,29 +207,6 @@ def gather_initial_info(log_dir):
     return data
 
 
-def load_initial_info(log_dir):
-    info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
-    with open(info_path, 'rb') as info_file:
-        return pickle.load(info_file)
-
-def _read_json_file(filename):
-    with open(filename, 'r') as f:
-        lines = f.readlines()
-        return [json.loads(line) for line in lines]
-
-def load_data_into_frame(log_dir):
-    data_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    json_array = _read_json_file(data_path)
-    return json_normalize(json_array), json_array
-
-def log_final_info(log_dir):
-    final_time = datetime.now()
-    info = load_initial_info(log_dir)
-    info["experiment_end"] = final_time
-    info_path = safe_file_path(os.path.join(log_dir, INFOPATH))
-
-    with open(info_path, 'wb') as info_file:
-        pickle.dump(info, info_file)
 
 class ImpactTracker(object):
 

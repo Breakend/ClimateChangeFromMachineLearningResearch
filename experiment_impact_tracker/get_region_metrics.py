@@ -1,4 +1,4 @@
-from .constants import REGIONS_WITH_BOUNDING_BOXES, ZONE_INFO
+from .constants import REGIONS_WITH_BOUNDING_BOXES, ZONE_INFO, ZONE_NAMES
 from shapely.geometry import Point
 
 def get_zone_information_by_coords(coords):
@@ -29,6 +29,13 @@ def get_current_location():
 
 def get_current_region_info():
     return get_zone_information_by_coords(get_current_location())
+
+def get_zone_name_by_id(zone_id):
+    zone = ZONE_NAMES["zoneShortName"][zone_id]
+    name = zone['zoneName']
+    if 'countryName' in zone:
+        name += ", {}".format(zone['countryName'])
+    return name
 
 def get_sorted_region_infos():
     zone_infos = [(key, value['carbonIntensity']) for key, value in ZONE_INFO.items()]
