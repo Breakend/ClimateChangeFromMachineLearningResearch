@@ -193,7 +193,8 @@ def main(arguments):
         output = template.render(
                                     exp_set_names_titles = [(_format_setname(args.experiment_set_names[exp_set]), args.experiment_set_names[exp_set]) for exp_set in range(len(args.experiment_set_filters))],
                                     exps = list(range(len(list(aggregated_info[args.experiment_set_names[exp_set]].values())[0]))),
-                                    summary = pd.DataFrame(summary_info)
+                                    summary = pd.DataFrame(summary_info),
+                                    title=args.title
                                     )
         os.makedirs(os.path.join(args.output_dir, _format_setname(args.experiment_set_names[exp_set])), exist_ok=True)
         with open(os.path.join(args.output_dir, _format_setname(args.experiment_set_names[exp_set]), 'index.html'), 'w') as f:
@@ -222,7 +223,8 @@ def main(arguments):
                             package  = pd.DataFrame.from_dict(package_infos_all[args.experiment_set_names[exp_set]][i]),
                             stats = pd.DataFrame(summary_info),
                             graph_paths=relative_graph_paths,
-                            data_download_path = relative_data_zip_paths)
+                            data_download_path = relative_data_zip_paths,
+                            title=args.title)
             with open(html_output_path, 'w') as f:
                 f.write(output)
 
