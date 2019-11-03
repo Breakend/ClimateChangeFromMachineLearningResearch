@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Separable Convolutions (128 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Separable Convolutions (128 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.744077 +/{-} 0.00813872 (stderr) (p=1.00968e{-}07, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.649076 +/{-} 0.00245744 (stderr) (p=1.182e{-}09, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.0370526 +/{-} 0.0060935 (stderr) (p=0.00168497, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.247096 +/{-} 0.00244902 (stderr) (p=3.45828e{-}08, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.147695 +/{-} 0.00163031 (stderr) (p=5.86271e{-}08, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.00869487 +/{-} 8.65611e{-}05 (stderr) (p=1.2879e{-}07, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.663766 +/{-} 0.00361642 (stderr) (p=9.86169e{-}10, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&70.439 +/{-} 22.1751 (stderr) (p=0.00279086, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}2.9763083333333338\\%
+\hline%
+gpu\_hours&{-}2.5963054531106255\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.1482103825419177\\%
+\hline%
+total\_power&{-}0.9883851796003961\\%
+\hline%
+kw\_hr\_gpu&{-}0.590780779066668\\%
+\hline%
+kw\_hr\_cpu&{-}0.034779461186747254\\%
+\hline%
+exp\_len\_hours&{-}2.6550630251566565\\%
+\hline%
+average\_realtime\_carbon\_intensity&281.7561857286321\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

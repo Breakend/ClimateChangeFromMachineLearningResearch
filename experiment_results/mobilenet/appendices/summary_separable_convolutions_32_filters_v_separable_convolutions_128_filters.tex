@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Separable Convolutions (32 filters) v. Separable Convolutions (128 filters)}%
+\label{sec:Experiment Set Difference Separable Convolutions (32 filters) v. Separable Convolutions (128 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}0.761965 +/{-} 0.0497342 (stderr) (p=8.71044e{-}05, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.664333 +/{-} 0.0382831 (stderr) (p=8.12671e{-}05, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.0471835 +/{-} 0.00629288 (stderr) (p=0.000469437, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.256167 +/{-} 0.0146579 (stderr) (p=5.72818e{-}05, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.153232 +/{-} 0.00874051 (stderr) (p=5.13408e{-}05, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.00889881 +/{-} 0.000564844 (stderr) (p=8.29067e{-}05, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.635091 +/{-} 0.00387599 (stderr) (p=3.16179e{-}11, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}45.4836 +/{-} 18.7255 (stderr) (p=0.0254793, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}3.0478583333333336\\%
+\hline%
+gpu\_hours&{-}2.657331771860575\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.1887338398467273\\%
+\hline%
+total\_power&{-}1.0246684247207154\\%
+\hline%
+kw\_hr\_gpu&{-}0.6129290627366444\\%
+\hline%
+kw\_hr\_cpu&{-}0.03559525670684637\\%
+\hline%
+exp\_len\_hours&{-}2.5403633114364412\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}181.9345026919292\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}

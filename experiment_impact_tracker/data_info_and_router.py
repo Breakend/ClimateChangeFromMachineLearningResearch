@@ -135,7 +135,7 @@ DATA_HEADERS = [
     {
         "name": "cpu_freq",
         "description": "Get cpu frequency including realtime in MHz.",
-        "compatability": ["linux"],
+        "compatability": ["all"],
         "routing": {
             "function": get_cpu_freq 
         }

@@ -41,34 +41,13 @@ assert_gpus_by_attributes({ "name" : "GeForce GTX TITAN X"})
 assert_cpus_by_attributes({ "brand": "Intel(R) Xeon(R) CPU E5-2640 v3 @ 2.60GHz" })
 ```
 
-### Generating a LateX appendix from your data
+### Generating an HTML appendix
 
-You can generate an appendix that will aggregate certain info from the recorded data like this:
 
-```bash
-./scripts/create-compute-appendix experiment_results/mobilenet/raw/conv_mobilenet_v1_32_0 experiment_results/mobilenet/raw/conv_mobilenet_v1_32_1/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_2/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_3/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_4/ --experiment_set_names "Normal Convolutions (32 filters)"
-```
-
-This will generate a directory structure like the following, where each experiment in the set is given a number and the summary looks at the per experiment aggregates with standard error as well as cumulative usage.
-
-```
-<experiment_set_name>/0.pdf
-<experiment_set_name>/1.pdf
-<experiment_set_name>/2.pdf
-<experiment_set_name>/3.pdf
-<experiment_set_name>/4.pdf
-<experiment_set_name>/summary.pdf
-```
-
-You can compare two sets of experiments as follows:
+Here's an example for us generating an appendix for all the pong experiments
 
 ```bash
-./scripts/create-compute-appendix experiment_results/mobilenet/raw/conv_mobilenet_v1_32_0 experiment_results/mobilenet/raw/conv_mobilenet_v1_32_1/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_2/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_3/ experiment_results/mobilenet/raw/conv_mobilenet_v1_32_4/ --experiment_set_names "Normal Convolutions (32 filters)" "Separable Convolutions (64 filters)" --compare_dirs experiment_results/mobilenet/raw/mobilenet_v1_64_0 experiment_results/mobilenet/raw/mobilenet_v1_64_1/ experiment_results/mobilenet/raw/mobilenet_v1_64_2/ experiment_results/mobilenet/raw/mobilenet_v1_64_3/ experiment_results/mobilenet/raw/mobilenet_v1_64_4/
+python ./scripts/create_compute_appendix_html.py ./experiment_results/rl/ --experiment_set_names "ppo2 (stable_baselines)" "a2c (stable_baselines)" "dqn (stable_baselines)" "a2c+vtrace (cule)" --experiment_set_filters "ppo2" "a2c_Pong" "dqn" "vtrace_cule" --output_dir ./testhtml/ --title "PongNoFrameskip-v4 Experiments" --description "Evaluate on separate environments every 250k timesteps in parallel (see code for details), run for 5M timesteps (roughly 23.15 hrs of experience)."
 ```
 
-This will create a file with the treatment effects of the first experiment versus the second experiment set (with standard error and p-value using Welch's t-test): 
-
-```
-<experiment_set_name_1>_v_<experiment_set_name_2>.pdf
-```
 

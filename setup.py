@@ -32,7 +32,8 @@ setup(name='experiment_impact_tracker',
           'ujson',
           'geocoder',
           'deepdiff',
-          'arrow'
+          'arrow',
+          'zipfile'
       ], 
       extras_require={
         'tests': [

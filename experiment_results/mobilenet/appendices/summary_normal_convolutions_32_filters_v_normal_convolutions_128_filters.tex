@@ -1,0 +1,60 @@
+\documentclass{article}%
+\usepackage[T1]{fontenc}%
+\usepackage[utf8]{inputenc}%
+\usepackage{lmodern}%
+\usepackage{textcomp}%
+\usepackage{lastpage}%
+%
+%
+%
+\begin{document}%
+\normalsize%
+\section{Experiment Set Difference: Normal Convolutions (32 filters) v. Normal Convolutions (128 filters)}%
+\label{sec:Experiment Set Difference Normal Convolutions (32 filters) v. Normal Convolutions (128 filters)}%
+\subsection{Average Treatment Effect (Per Experiment in Experiment Set)}%
+\label{subsec:Average Treatment Effect (Per Experiment in Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}1.01451 +/{-} 0.00785308 (stderr) (p=2.65485e{-}08, Welch's t{-}test)\\%
+\hline%
+gpu\_hours&{-}0.893026 +/{-} 0.00346745 (stderr) (p=6.11616e{-}09, Welch's t{-}test)\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.131672 +/{-} 0.00466949 (stderr) (p=1.22275e{-}05, Welch's t{-}test)\\%
+\hline%
+total\_power&{-}0.378849 +/{-} 0.00976106 (stderr) (p=6.86442e{-}06, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_gpu&{-}0.226654 +/{-} 0.00548842 (stderr) (p=5.47002e{-}06, Welch's t{-}test)\\%
+\hline%
+kw\_hr\_cpu&{-}0.0131244 +/{-} 0.00116085 (stderr) (p=0.000308014, Welch's t{-}test)\\%
+\hline%
+exp\_len\_hours&{-}0.903765 +/{-} 0.00329574 (stderr) (p=7.2376e{-}11, Welch's t{-}test)\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}87.2613 +/{-} 12.5536 (stderr) (p=0.00050248, Welch's t{-}test)\\%
+\hline%
+\end{tabular}
+
+%
+\subsection{Cumulative Difference (Per Experiment Set)}%
+\label{subsec:Cumulative Difference (Per Experiment Set)}%
+\begin{tabular}{|r|c|}%
+\hline%
+cpu\_hours&{-}4.058025000000001\\%
+\hline%
+gpu\_hours&{-}3.57210574334093\\%
+\hline%
+estimated\_carbon\_impact\_kg&{-}0.5266891654544956\\%
+\hline%
+total\_power&{-}1.5153976056268785\\%
+\hline%
+kw\_hr\_gpu&{-}0.9066147617183666\\%
+\hline%
+kw\_hr\_cpu&{-}0.052497646906240314\\%
+\hline%
+exp\_len\_hours&{-}3.6150590062141417\\%
+\hline%
+average\_realtime\_carbon\_intensity&{-}349.04537940421915\\%
+\hline%
+\end{tabular}
+
+%
+\end{document}
