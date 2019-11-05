@@ -4,10 +4,10 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="../../style/fonts.css">
+    <link rel="stylesheet" type="text/css" href="../{{relative_base_dir}}/style/fonts.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <link rel="stylesheet" type="text/css" href="../../style/main.css">
+    <link rel="stylesheet" type="text/css" href="../{{relative_base_dir}}/style/main.css">
     <style type="text/css">
         :root #content > #center > .dose > .dosesingle,
         :root #content > #right > .dose > .dosesingle {
@@ -18,17 +18,21 @@
 
 <body>
 <div class="gutter">
-        <a href="../../index.html" >{{title}}</a>
+        <a href="../index.html" >Experiment Sets</a>
         <div class="nav">
             {% for exp_set_name, exp_set_title  in exp_set_names_titles -%}
                 <br>
-                <a href="../../{{exp_set_name}}/index.html" class="at">{{exp_set_title}}</a>
+                <a href="../{{exp_set_name}}/index.html" class="at">{{exp_set_title}}</a>
             {% endfor %}
         </div>
     </div>
     <div id="main">
         <div id="content">
-            
+            <div class="title">
+                    <div class="heading"> <a href="./index.html">{{title}}</a></div>
+            </div>
+            <br/>
+            <br/>
             
             <div class="heading">Experiment Information</div>
 
@@ -58,7 +62,7 @@
             <div class="heading">Graphs</div>
             <div class="paper tables">
                 {% for path in graph_paths -%}
-                <img style="width: 80%;" src="{{path}}">
+                <img style="width: 80%;" src="./{{path}}">
                 {% endfor %}
             </div>     
         </div>

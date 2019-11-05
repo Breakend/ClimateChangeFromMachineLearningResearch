@@ -4,10 +4,10 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <link rel="stylesheet" type="text/css" href="./style/fonts.css">
+    <link rel="stylesheet" type="text/css" href="{{relative_base_dir}}/style/fonts.css">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
 
-    <link rel="stylesheet" type="text/css" href="./style/main.css">
+    <link rel="stylesheet" type="text/css" href="{{relative_base_dir}}/style/main.css">
     <style type="text/css">
         :root #content > #center > .dose > .dosesingle,
         :root #content > #right > .dose > .dosesingle {
@@ -18,7 +18,7 @@
 
 <body>
     <div class="gutter">
-            Experiment Sets
+            <a href="../index.html">Experiment Sets</a>
             <div class="nav">
                 {% for exp_set_name, exp_set_title  in exp_set_names_titles -%}
                     <br>
