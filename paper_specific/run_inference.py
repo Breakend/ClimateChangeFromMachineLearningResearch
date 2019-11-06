@@ -2,7 +2,8 @@ import torch
 from thop.profile import profile
 from PIL import Image
 from torchvision import transforms
-from experiment_impact_tracker.compute_tracker import ImpactTracker, get_flop_count_tensorflow
+from experiment_impact_tracker.compute_tracker import ImpactTracker
+from experiment_impact_tracker.utils import get_flop_count_tensorflow
 import argparse
 import os
 import random
@@ -33,18 +34,6 @@ models = [ ('PingoLH/Pytorch-HarDNet', 'hardnet68'),
            ('facebookresearch/WSL-Images', 'resnext101_32x32d_wsl'),
            ('facebookresearch/WSL-Images', 'resnext101_32x48d_wsl'),
 ]
-
-#host = os.environ['HOSTNAME'].replace(".stanford.edu","")
-#os.environ['TORCH_HOME'] = "/{}/scr1/phend/".format(host)
-#print("Using torchhome of {}".format("/{}/scr1/phend/".format(host)))
-print("Running on machine: {}".format(os.environ["SLURM_SUBMIT_HOST"]))
-os.environ['TORCH_HOME'] =  "/{}/scr1/phend/".format(os.environ["SLURM_SUBMIT_HOST"].replace(".stanford.edu", ""))
-directory = "/{}/scr1/phend/".format(os.environ["SLURM_SUBMIT_HOST"].replace(".stanford.edu", ""))
-import os
-if not os.path.exists(directory):
-    os.makedirs(directory)
-# Open child processes via os.system(), popen() or fork() and execv()
-
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('model', type=int, help="Select model from constant list")
