@@ -44,19 +44,19 @@
             <div class="paper tables">
                 <a name="cpu_info"></a> 
                 <br> <div class="header"><span>CPU Info</span></div></span>
-                {{ cpu_info.to_html() | safe }}
+                {{ cpu_info.to_html(classes="table table-striped") | safe }}
                 <a name="gpu_info"></a> 
                 <div class="header"><span>GPU Info</span></div></span>
-                {{ gpu_info.to_html() | safe }}
+                {{ gpu_info.to_html(classes="table table-striped") | safe }}
                 <a name="package_info"></a> 
                 <div class="header"><span>Package Info</span></div></span>
-                {{ package.to_html() | safe }}
+                {{ package.to_html(classes="table table-striped") | safe }}
                 <a name="carbon_info"></a> 
                 <br> <div class="header"><span>Carbon Info</span></div></span>
-                {{ carbon_info.to_html() | safe }}
+                {{ carbon_info.to_html(classes="table table-striped") | safe }}
                 <a name="stats"></a> 
                 <br> <div class="header"><span>Stats</span></div></span>
-                {{ stats.to_html() | safe }}
+                {{ stats.to_html(classes="table table-striped") | safe }}
             </div>
             <a name="graphs"></a> 
             <div class="heading">Graphs</div>

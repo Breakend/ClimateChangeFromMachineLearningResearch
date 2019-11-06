@@ -4,6 +4,7 @@ import datetime
 import matplotlib.pyplot as plt
 import random
 import string
+import seaborn as sns
 from experiment_impact_tracker.data_utils import load_data_into_frame
 """
 Usage
@@ -81,3 +82,39 @@ def create_graphs(input_path: str, output_path: str ='.', fig_x:int = 16, fig_y:
         plt.close('all')
         created_paths.append(path_name)
     return created_paths
+
+
+def create_scatterplot_from_df(df, x: str, y: str, output_path: str ='.', fig_x:int = 16, fig_y: int = 8):
+    """Loads an executive summary df and creates a scatterplot from some pre-specified variables.
+    
+    Args:
+        df ([type]): [description]
+        x (str): [description]
+        y (str): [description]
+        output_path (str, optional): [description]. Defaults to '.'.
+        fig_x (int, optional): [description]. Defaults to 16.
+        fig_y (int, optional): [description]. Defaults to 8.
+    """
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    # create graph dirs
+    graph_dir = str(fig_x) + '_' + str(fig_y)
+    out_dir = os.path.join(output_path, graph_dir)
+    df[x] = df[x].astype(float)
+    df[y] = df[y].astype(float)
+    os.makedirs(out_dir, exist_ok=True)
+    a4_dims = (14, 9)
+    fig, ax = plt.subplots(figsize=a4_dims)
+    graph = sns.scatterplot(ax=ax, x=x, y=y, data=df, sizes=(250, 500),  alpha=.5, hue='Experiment', legend='brief')#, palette="Set1")
+    box = ax.get_position()
+    ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
+    plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
+    # plt.ylim(bottom=0.0)
+
+    # plt.legend(loc='lower right')
+    #Use regplot to plot the regression line for the whole points
+    # sns.regplot(x="FPOs", y=args.y_axis_var, data=df, sizes=(250, 500),  alpha=.5, scatter=False, ax=graph.axes[2])
+    path_name = os.path.join(out_dir, '{}v{}.png'.format(x,y))
+    plt.savefig(path_name)
+    plt.close('all')
+    return path_name

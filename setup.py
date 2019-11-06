@@ -18,6 +18,7 @@ if sys.version_info.major != 3:
 setup(name='experiment_impact_tracker',
       packages= find_packages(),
       include_package_data=True,
+      scripts=['scripts/create-compute-appendix','scripts/get-region-emission-info', 'scripts/lookup-cloud-region-info'],
       install_requires=[
           'requests',
           'bs4',
@@ -25,7 +26,7 @@ setup(name='experiment_impact_tracker',
           'scipy',
           'joblib',
           'numpy',
-          'pandas==0.24.2',
+          'pandas>0.25.0',
           'matplotlib',
           'py-cpuinfo',
           'pylatex',
@@ -33,7 +34,11 @@ setup(name='experiment_impact_tracker',
           'geocoder',
           'deepdiff',
           'arrow',
-          'zipfile'
+          'bootstrapped',
+          'jinja2',
+          'tqdm',
+          'psutil',
+          'seaborn'
       ], 
       extras_require={
         'tests': [

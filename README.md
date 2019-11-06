@@ -49,5 +49,3 @@ Here's an example for us generating an appendix for all the pong experiments
 ```bash
 python ./scripts/create_compute_appendix_html.py ./experiment_results/rl/ --experiment_set_names "ppo2 (stable_baselines)" "a2c (stable_baselines)" "dqn (stable_baselines)" "a2c+vtrace (cule)" --experiment_set_filters "ppo2" "a2c_Pong" "dqn" "vtrace_cule" --output_dir ./testhtml/ --title "PongNoFrameskip-v4 Experiments" --description "Evaluate on separate environments every 250k timesteps in parallel (see code for details), run for 5M timesteps (roughly 23.15 hrs of experience)."
 ```
-
-

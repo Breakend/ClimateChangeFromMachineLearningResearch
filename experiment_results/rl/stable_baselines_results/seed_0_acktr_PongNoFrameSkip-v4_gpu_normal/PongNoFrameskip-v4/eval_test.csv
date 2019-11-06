@@ -1,3 +1,0 @@
-{"async_eigen_decomp": true, "lr_schedule": "linear", "n_envs": 32, "n_timesteps": 5000000.0, "policy": "CnnPolicy"}
-frames,total_time,rmean,rmedian,rmin,rmax,rstd,lmean,lmedian,lmin,lmax,lstd
-250631,9637.021307468414,-20.56,-21.0,-21,-19,0.6374950980203692,858.04,829.0,774,1189,83.01011022761023

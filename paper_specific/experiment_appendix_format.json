@@ -1,38 +1,43 @@
 {
     "Reinforcement Learning Energy Leaderboard" : {
         "filter" : null,
-        "description" : "Reinforcement Learning Experiments, tracking efficiency versus performance of various implementations and environments.",
-        "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],        "child_experiments" : 
+        "description" : "Reinforcement Learning Experiments, tracking efficiency versus performance of various implementations and environments. Environments listed on the left. Click on them to see algorithmic performance (and click further to get details on hardware used, among other details).<br/><br/> <div class=\"alert alert-success fade in\"> <strong>Call for contributions!</strong> We're always looking for more data to find the most efficient settings! Please <a href=\"https://github.com/Breakend/RLEnergyLeaderboard\">send us a pull request with your runs!</a></div>",
+        "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],        
+        "child_experiments" : 
             {
                 "PongNoFrameskip-v4 Experiments" : {
                     "filter" : "(Pong)",
                     "description" : "PongNoFrameskip-v4 expeirments. Evaluate on separate environments every 250k timesteps in parallel (see code for details), run for 5M timesteps (roughly 23.15 hrs of experience).",
-                    "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],
+                    "executive_summary_variables" : ["AverageReturnPerkWh", "AverageReturn", "AsymptoticReturn", "total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],
+                    "executive_summary_ordering_variable" : "AverageReturnPerkWh",
+                    "extra_files_processor" : "paper_specific.processors.load_rl_eval",
+                    "executive_summary_plots" : [
+                        {"x" : "total_power", "y" : "AverageReturn"}, 
+                        {"x" : "total_power", "y" : "AsymptoticReturn"}, 
+                        {"x" : "exp_len_hours", "y" : "AverageReturn"},  
+                        {"x" : "exp_len_hours", "y" : "AsymptoticReturn"}
+                    ],
                     "child_experiments" : 
                         {
                             "PPO2 (stable_baselines, default settings)" : {
                                 "filter" : "(ppo2)",
                                 "description" : "PPO2 experiments using default settings of stable_baselines repository.",
-                                "extra_files" : "eval_test.csv",
-                                "extra_files_processor" : "rlenergyleaderboard.processors.process_eval_files"
+                                "extra_files_processor" : "paper_specific.processors.load_rl_eval"
                             },
                             "A2C (stable_baselines, default settings)" : {
                                 "filter" : "(.*stable_baseline.*.a2c.*)",
                                 "description" : "TODO",
-                                "extra_files" : "eval_test.csv",
-                                "extra_files_processor" : "rlenergyleaderboard.processors.process_eval_files"
+                                "extra_files_processor" : "paper_specific.processors.load_rl_eval"
                             },
                             "DQN (stable_baselines, default settings)" : {
                                 "filter" : "(.*stable_baseline.*.dqn.*)",
                                 "description" : "TODO",
-                                "extra_files" : "eval_test.csv",
-                                "extra_files_processor" : "rlenergyleaderboard.processors.process_eval_files"
+                                "extra_files_processor" : "paper_specific.processors.load_rl_eval"
                             },
                             "A2C+Vtrace (cule, default settings)" : {
                                 "filter" : "(.*vtrace.*.a2c.*)|(.*a2c.*.vtrace.*)",
                                 "description" : "TODO",
-                                "extra_files" : "eval_test.csv",
-                                "extra_files_processor" : "rlenergyleaderboard.processors.process_eval_files"
+                                "extra_files_processor" : "paper_specific.processors.load_rl_eval"
                             }
                         }
                     

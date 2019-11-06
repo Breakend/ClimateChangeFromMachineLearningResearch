@@ -8,9 +8,8 @@ import scipy
 import numpy as np
 from pprint import pprint
 import matplotlib.pyplot as plt
-from experiment_impact_tracker.compute_tracker import (PUE,
-                                                       load_data_into_frame,
-                                                       load_initial_info)
+from experiment_impact_tracker.data_utils import load_data_into_frame, load_initial_info
+from experiment_impact_tracker.utils import gather_additional_info
                                                     
                                                        
 from experiment_impact_tracker.stats import run_test, get_average_treatment_effect
