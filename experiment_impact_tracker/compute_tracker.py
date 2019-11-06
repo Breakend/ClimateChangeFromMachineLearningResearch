@@ -80,7 +80,11 @@ def _sample_and_log_power(log_dir, initial_info, logger=None):
     header_information["process_ids"] = process_ids
     # once we have gotten all the required info through routing calls for all headers, we log it
     log_path = safe_file_path(os.path.join(log_dir, DATAPATH))
-    write_json_data_to_file(log_path, header_information)
+    try:
+        write_json_data_to_file(log_path, header_information)
+    except:
+        logger.error(header_information)
+        raise
     return header_information
 
 

@@ -213,10 +213,14 @@ def get_nvidia_gpu_power(pid_list, logger=None, **kwargs):
 
         results.append(gpu_data)
 
-    average_gpu_utilization = np.mean(
-        list(per_gpu_absolute_percent_usage.values()))
-    average_gpu_relative_utilization = np.mean(
-        list(per_gpu_relative_percent_usage.values()))
+    if len(per_gpu_absolute_percent_usage.values()) == 0:
+        average_gpu_utilization = 0
+        average_gpu_relative_utilization = 0
+    else:
+        average_gpu_utilization = np.mean(
+            list(per_gpu_absolute_percent_usage.values()))
+        average_gpu_relative_utilization = np.mean(
+            list(per_gpu_relative_percent_usage.values()))
 
     data_return_values_with_headers = {
         "nvidia_draw_absolute": absolute_power,

@@ -1,4 +1,5 @@
 import experiment_impact_tracker.emissions.us_ca_parser as us_ca_parser
+import numpy
 
 REALTIME_REGIONS = {
     "US-CA" : us_ca_parser
@@ -13,8 +14,17 @@ def get_realtime_carbon_source(region):
 def get_realtime_carbon(*args, **kwargs):
     if 'region' not in kwargs:
         raise ValueError("region was not passed to function")
-    carbon_intensity = REALTIME_REGIONS[kwargs['region']].fetch_supply()[0]['carbon_intensity']
-    print(carbon_intensity)
+    try:
+        carbon_intensity = REALTIME_REGIONS[kwargs['region']].fetch_supply()[0]['carbon_intensity']
+        if numpy.isnan(carbon_intensity):
+            return {
+                "realtime_carbon_intensity" : "n/a"
+            }
+    except:
+        return {
+            "realtime_carbon_intensity" : "n/a"
+        }
+
     return {
         "realtime_carbon_intensity" : carbon_intensity 
     }
