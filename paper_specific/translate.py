@@ -1,18 +1,11 @@
 import torch
 from essential_generators import DocumentGenerator
-from experiment_impact_tracker.compute_tracker import ImpactTracker, get_flop_count_tensorflow
+from experiment_impact_tracker.compute_tracker import ImpactTracker
+from experiment_impact_tracker.utils import get_flop_count_tensorflow
 import argparse
 import os
 import random
 import numpy as np
-
-
-#host = os.environ['HOSTNAME'].replace(".stanford.edu","")
-#os.environ['TORCH_HOME'] = "/{}/scr1/phend/".format(host)
-#print("Using torchhome of {}".format("/{}/scr1/phend/".format(host)))
-os.environ['TORCH_HOME'] =  "/{}/scr1/phend/".format(os.environ["SLURM_NODELIST"])
-# Open child processes via os.system(), popen() or fork() and execv()
-
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('model', help="conv.wmt14.en-fr, transformer.wmt14.en-fr")
