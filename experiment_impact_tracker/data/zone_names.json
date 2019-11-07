@@ -227,6 +227,10 @@
         "countryName": "Chile",
         "zoneName": "SING/SIC"
       },
+      "CL-SIC": {
+          "countryName": "Chile",
+          "zoneName": "SIC"
+      },
       "CL-SEM": {
         "countryName": "Chile",
         "zoneName": "SEM"
