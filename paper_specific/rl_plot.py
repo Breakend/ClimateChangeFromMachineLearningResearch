@@ -114,7 +114,7 @@ def main(arguments):
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
     print(df)
-    graph = sns.scatterplot(ax=ax, x="kWh", y="AverageReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650, legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, x="kWh", y="AverageReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650, legend='brief', palette=sns.color_palette("colorblind", 10))#, palette="Set1")
     box = ax.get_position()
     ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
     plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
@@ -128,7 +128,7 @@ def main(arguments):
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
     print(df)
-    graph = sns.scatterplot(ax=ax, x="kWh", y="AsymptoticReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650,  legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, x="kWh", y="AsymptoticReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650,  legend='brief', palette=sns.color_palette("colorblind", 10))#, palette="Set1")
     box = ax.get_position()
     ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
     plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
@@ -143,7 +143,7 @@ def main(arguments):
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
     print(df)
-    graph = sns.scatterplot(ax=ax, x="Time(h)", y="AsymptoticReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650,  legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, x="Time(h)", y="AsymptoticReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650,  legend='brief', palette=sns.color_palette("colorblind", 10))#, palette="Set1")
     box = ax.get_position()
     ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
     plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
@@ -156,7 +156,7 @@ def main(arguments):
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
     print(df)
-    graph = sns.scatterplot(ax=ax, x="Time(h)", y="AverageReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650, legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, x="Time(h)", y="AverageReturn", data=df, sizes=(250, 500),  alpha=.5, hue='Algo', size=650, legend='brief', palette=sns.color_palette("colorblind", 10))#, palette="Set1")
     box = ax.get_position()
     ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
     plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
@@ -165,7 +165,7 @@ def main(arguments):
     # plt.legend(loc='lower right')
     #Use regplot to plot the regression line for the whole points
     # sns.regplot(x="FPOs", y=args.y_axis_var, data=df, sizes=(250, 500),  alpha=.5, scatter=False, ax=graph.axes[2])
-    plt.savefig('time_averagereturn.png',bbox_inches='tight')
+    plt.savefig('time_averagereturn.png', bbox_inches='tight')
 
     
 if __name__ == '__main__':

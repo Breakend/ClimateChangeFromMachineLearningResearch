@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<!-- modified from url=(0044)http://idl.cs.washington.edu/papers/tfgraph/ -->
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../style/fonts.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" type="text/css" href="../../style/main.css">
+    <style type="text/css">
+        :root #content > #center > .dose > .dosesingle,
+        :root #content > #right > .dose > .dosesingle {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gutter">
+            <a href="../index.html">Experiment Sets</a>
+            <div class="nav">
+                <br>
+                    <a href="./hardnet39ds/index.html" class="at">hardnet39ds</a>
+                <br>
+                    <a href="./hardnet68/index.html" class="at">hardnet68</a>
+                <br>
+                    <a href="./hardnet68ds/index.html" class="at">hardnet68ds</a>
+                <br>
+                    <a href="./hardnet85/index.html" class="at">hardnet85</a>
+                <br>
+                    <a href="./mobilenet_v2/index.html" class="at">mobilenet_v2</a>
+                <br>
+                    <a href="./shufflenet_v2/index.html" class="at">shufflenet_v2</a>
+                <br>
+                    <a href="./squeeznet1_0/index.html" class="at">SqueezNet1_0</a>
+                <br>
+                    <a href="./squeeznet1_1/index.html" class="at">SqueezNet1_1</a>
+                <br>
+                    <a href="./vgg19/index.html" class="at">VGG19</a>
+                <br>
+                    <a href="./vgg16/index.html" class="at">VGG16</a>
+                <br>
+                    <a href="./vgg13/index.html" class="at">VGG13</a>
+                <br>
+                    <a href="./vgg11/index.html" class="at">VGG11</a>
+                <br>
+                    <a href="./wide_resnet_50/index.html" class="at">Wide ResNet 50</a>
+                <br>
+                    <a href="./wide_resnet_101/index.html" class="at">Wide ResNet 101</a>
+                <br>
+                    <a href="./alexnet/index.html" class="at">AlexNet</a>
+                <br>
+                    <a href="./googlenet/index.html" class="at">GoogLeNet</a>
+                <br>
+                    <a href="./densenet121/index.html" class="at">densenet121</a>
+                <br>
+                    <a href="./densenet161/index.html" class="at">densenet161</a>
+                <br>
+                    <a href="./densenet169/index.html" class="at">densenet169</a>
+                <br>
+                    <a href="./densenet201/index.html" class="at">densenet201</a>
+                
+            </div>
+        </div>
+    <div id="main">
+        <div id="content">
+            <div class="title">
+                    <div class="heading"> ImageNet Experiments</div>
+            </div>
+            <br/>
+            <br/>
+            <div class="abstract">
+                <div class="heading">Description</div>
+                <div class="text">
+                    ImageNet Experiments for paper.
+                </div>
+            </div>
+            <div class="article">
+                <div class="pub">
+                    <div class="materials">
+                        <div class="heading">Executive Summary</div>
+                        <!-- <div class="links"> -->
+                                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>Experiment</th>
+      <th>total_power</th>
+      <th>exp_len_hours</th>
+      <th>cpu_hours</th>
+      <th>gpu_hours</th>
+      <th>estimated_carbon_impact_kg</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>18</th>
+      <td>densenet161</td>
+      <td>0.060 +/- 0.00</td>
+      <td>0.405 +/- 0.01</td>
+      <td>0.426 +/- 0.01</td>
+      <td>0.246 +/- 0.00</td>
+      <td>0.020 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>densenet201</td>
+      <td>0.052 +/- 0.00</td>
+      <td>0.490 +/- 0.00</td>
+      <td>0.515 +/- 0.01</td>
+      <td>0.183 +/- 0.00</td>
+      <td>0.018 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>densenet169</td>
+      <td>0.042 +/- 0.00</td>
+      <td>0.423 +/- 0.01</td>
+      <td>0.442 +/- 0.01</td>
+      <td>0.150 +/- 0.00</td>
+      <td>0.014 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>Wide ResNet 101</td>
+      <td>0.041 +/- 0.00</td>
+      <td>0.214 +/- 0.00</td>
+      <td>0.225 +/- 0.00</td>
+      <td>0.171 +/- 0.00</td>
+      <td>0.014 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>hardnet85</td>
+      <td>0.029 +/- 0.00</td>
+      <td>0.211 +/- 0.00</td>
+      <td>0.221 +/- 0.00</td>
+      <td>0.104 +/- 0.00</td>
+      <td>0.010 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>densenet121</td>
+      <td>0.029 +/- 0.00</td>
+      <td>0.294 +/- 0.00</td>
+      <td>0.310 +/- 0.01</td>
+      <td>0.093 +/- 0.00</td>
+      <td>0.010 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>hardnet68ds</td>
+      <td>0.023 +/- 0.00</td>
+      <td>0.245 +/- 0.00</td>
+      <td>0.259 +/- 0.00</td>
+      <td>0.037 +/- 0.00</td>
+      <td>0.008 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>Wide ResNet 50</td>
+      <td>0.022 +/- 0.00</td>
+      <td>0.113 +/- 0.00</td>
+      <td>0.119 +/- 0.00</td>
+      <td>0.090 +/- 0.00</td>
+      <td>0.007 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>hardnet68</td>
+      <td>0.020 +/- 0.00</td>
+      <td>0.169 +/- 0.00</td>
+      <td>0.177 +/- 0.00</td>
+      <td>0.063 +/- 0.00</td>
+      <td>0.007 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>VGG19</td>
+      <td>0.019 +/- 0.00</td>
+      <td>0.060 +/- 0.00</td>
+      <td>0.065 +/- 0.00</td>
+      <td>0.059 +/- 0.00</td>
+      <td>0.007 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>VGG16</td>
+      <td>0.016 +/- 0.00</td>
+      <td>0.051 +/- 0.00</td>
+      <td>0.055 +/- 0.00</td>
+      <td>0.050 +/- 0.00</td>
+      <td>0.005 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>GoogLeNet</td>
+      <td>0.013 +/- 0.00</td>
+      <td>0.133 +/- 0.00</td>
+      <td>0.140 +/- 0.00</td>
+      <td>0.040 +/- 0.00</td>
+      <td>0.004 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>hardnet39ds</td>
+      <td>0.013 +/- 0.00</td>
+      <td>0.139 +/- 0.00</td>
+      <td>0.145 +/- 0.00</td>
+      <td>0.022 +/- 0.00</td>
+      <td>0.005 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>VGG13</td>
+      <td>0.013 +/- 0.00</td>
+      <td>0.042 +/- 0.00</td>
+      <td>0.045 +/- 0.00</td>
+      <td>0.041 +/- 0.00</td>
+      <td>0.004 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>shufflenet_v2</td>
+      <td>0.011 +/- 0.00</td>
+      <td>0.119 +/- 0.00</td>
+      <td>0.126 +/- 0.00</td>
+      <td>0.016 +/- 0.00</td>
+      <td>0.004 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>VGG11</td>
+      <td>0.010 +/- 0.00</td>
+      <td>0.035 +/- 0.00</td>
+      <td>0.037 +/- 0.00</td>
+      <td>0.034 +/- 0.00</td>
+      <td>0.003 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>mobilenet_v2</td>
+      <td>0.009 +/- 0.00</td>
+      <td>0.093 +/- 0.00</td>
+      <td>0.098 +/- 0.00</td>
+      <td>0.020 +/- 0.00</td>
+      <td>0.003 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>SqueezNet1_1</td>
+      <td>0.005 +/- 0.00</td>
+      <td>0.046 +/- 0.00</td>
+      <td>0.049 +/- 0.00</td>
+      <td>0.011 +/- 0.00</td>
+      <td>0.002 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>SqueezNet1_0</td>
+      <td>0.005 +/- 0.00</td>
+      <td>0.046 +/- 0.00</td>
+      <td>0.048 +/- 0.00</td>
+      <td>0.013 +/- 0.00</td>
+      <td>0.002 +/- 0.00</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>AlexNet</td>
+      <td>0.003 +/- 0.00</td>
+      <td>0.014 +/- 0.00</td>
+      <td>0.016 +/- 0.00</td>
+      <td>0.014 +/- 0.00</td>
+      <td>0.001 +/- 0.00</td>
+    </tr>
+  </tbody>
+</table>
+                          <!-- </div> -->
+                    </div>
+                <div>        
+                </div>
+            </div>
+             
+        </div>
+</body>
+
+</html>

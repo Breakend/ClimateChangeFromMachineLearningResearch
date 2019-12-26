@@ -1,2 +1,0 @@
-class GPUAttributeAssertionError(Exception):
-    pass

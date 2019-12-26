@@ -148,7 +148,7 @@ def main(arguments):
     # plt.legend(loc='lower right')
     #Use regplot to plot the regression line for the whole points
     # sns.regplot(x="FPOs", y=args.y_axis_var, data=df, scatter=False, ax=graph.axes[2])
-    plt.savefig('plot.png')
+    plt.savefig('transformer_regions.png', bbox_inches='tight')
 
 
 if __name__ == '__main__':

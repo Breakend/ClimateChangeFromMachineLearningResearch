@@ -1,0 +1,133 @@
+{
+    "Measuring and Mitigating Energy and Carbon Footprints in Machine Learning" : {
+        "filter" : null,
+        "description" : "Here are the automated appendices generated for the translation and imagenet experiments in the paper 'Measuring and Mitigating Energy and Carbon Footprints in Machine Learning'.",
+        "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],        
+        "child_experiments" : 
+            {
+                "ImageNet Experiments" : {
+                    "filter" : "(imagenet)",
+                    "description" : "ImageNet Experiments for paper.",
+                    "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],
+                    "executive_summary_ordering_variable" : "total_power",
+                    "child_experiments" : 
+                        {
+                            "hardnet39ds" :  {
+                                "filter" : "(hardnet39ds)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_hardnet/\">https://pytorch.org/hub/pytorch_vision_hardnet/</a>."
+                            },
+                            "hardnet68" :  {
+                                "filter" : "(hardnet68_)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_hardnet/\">https://pytorch.org/hub/pytorch_vision_hardnet/</a>."
+                            },
+                            "hardnet68ds" :  {
+                                "filter" : "(hardnet68ds)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_hardnet/\">https://pytorch.org/hub/pytorch_vision_hardnet/</a>."
+                            },
+                            "hardnet85" :  {
+                                "filter" : "(hardnet85)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_hardnet/\">https://pytorch.org/hub/pytorch_vision_hardnet/</a>."
+                            },
+                            "mobilenet_v2" :  {
+                                "filter" : "(mobilenet_v2)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_mobilenet_v2/\">https://pytorch.org/hub/pytorch_vision_mobilenet_v2/</a>."
+                            },
+                            "shufflenet_v2" :  {
+                                "filter" : "(shufflenet_v2)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_shufflenet_v2/\">https://pytorch.org/hub/pytorch_vision_shufflenet_v2/</a>."
+                            },
+                            "SqueezNet1_0" :  {
+                                "filter" : "(squeezenet1_0)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_squeezenet/\">https://pytorch.org/hub/pytorch_vision_squeezenet/</a>."
+                            },
+                            "SqueezNet1_1" :  {
+                                "filter" : "(squeezenet1_1)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_squeezenet/\">https://pytorch.org/hub/pytorch_vision_squeezenet/</a>."
+                            },
+                            "VGG19" :  {
+                                "filter" : "(vgg19)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_vgg/\">https://pytorch.org/hub/pytorch_vision_vgg/</a>."
+                            },
+                            "VGG16" :  {
+                                "filter" : "(vgg16)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_vgg/\">https://pytorch.org/hub/pytorch_vision_vgg/</a>."
+                            },
+                            "VGG13" :  {
+                                "filter" : "(vgg13)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_vgg/\">https://pytorch.org/hub/pytorch_vision_vgg/</a>."
+                            },
+                            "VGG11" :  {
+                                "filter" : "(vgg11)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_vgg/\">https://pytorch.org/hub/pytorch_vision_vgg/</a>."
+                            },
+                            "Wide ResNet 50" :  {
+                                "filter" : "(wide_resnet50)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_wide_resnet/\">https://pytorch.org/hub/pytorch_vision_wide_resnet/</a>."
+                            },
+                            "Wide ResNet 101" :  {
+                                "filter" : "(wide_resnet101)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_wide_resnet/\">https://pytorch.org/hub/pytorch_vision_wide_resnet/</a>."
+                            },
+                            "AlexNet" :  {
+                                "filter" : "(alexnet)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_alexnet/\">https://pytorch.org/hub/pytorch_vision_alexnet/</a>."
+                            },
+                            "GoogLeNet" : {
+                                "filter" : "(googlenet)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_googlenet/\">https://pytorch.org/hub/pytorch_vision_googlenet/</a>."
+                            },
+                            "densenet121" : {
+                                "filter" : "(densenet121)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_densenet/\">https://pytorch.org/hub/pytorch_vision_densenet/</a>."
+                            },
+                            "densenet161" : {
+                                "filter" : "(densenet161)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_densenet/\">https://pytorch.org/hub/pytorch_vision_densenet/</a>."
+                            },
+                            "densenet169" : {
+                                "filter" : "(densenet169)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_densenet/\">https://pytorch.org/hub/pytorch_vision_densenet/</a>."
+                            },
+                            "densenet201" : {
+                                "filter" : "(densenet201)",
+                                "description" : "See: <a href=\"https://pytorch.org/hub/pytorch_vision_densenet/\">https://pytorch.org/hub/pytorch_vision_densenet/</a>."
+                            }
+                        }    
+                },
+                "Translation Experiments" : {
+                    "filter" : "(translation)",
+                    "description" : "Translation Experiments for paper.",
+                    "executive_summary_variables" : ["total_power", "exp_len_hours", "cpu_hours", "gpu_hours", "estimated_carbon_impact_kg"],
+                    "executive_summary_ordering_variable" : "total_power",
+                    "child_experiments" : 
+                        {
+                            "ConvNet (3-8 words)" :  {
+                                "filter" : "(.*conv.wmt14.en-fr_.*._min3_max8.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            },
+                            "ConvNet (3-50 words)" :  {
+                                "filter" : "(.*conv.wmt14.en-fr_.*._min3_max50.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            },
+                            "ConvNet (45-50 words)" :  {
+                                "filter" : "(.*conv.wmt14.en-fr_.*._min45_max50.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            },
+                            "Transformer (3-8 words)" :  {
+                                "filter" : "(.*transformer.wmt14.en-fr_.*._min3_max8.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            },
+                            "Transformer (3-50 words)" :  {
+                                "filter" : "(.*transformer.wmt14.en-fr_.*._min3_max50.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            },
+                            "Transformer (45-50 words)" :  {
+                                "filter" : "(.*transformer.wmt14.en-fr_.*._min45_max50.*)",
+                                "description" : "See <a href=\"https://github.com/pytorch/fairseq/tree/master/examples/translation\">https://github.com/pytorch/fairseq/tree/master/examples/translation</a>"
+                            }
+                        }    
+                }
+            }
+    }      
+}
+

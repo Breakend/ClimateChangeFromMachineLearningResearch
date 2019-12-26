@@ -23,10 +23,11 @@ from itertools import combinations
 # --- Use the 'palette' argument of seaborn
 import matplotlib.pyplot as plt
 from scipy.stats import pearsonr
+from adjustText import adjust_text
 
-SMALL_SIZE = 16
-MEDIUM_SIZE = 18
-BIGGER_SIZE = 22
+SMALL_SIZE = 24
+MEDIUM_SIZE = 26
+BIGGER_SIZE = 28
 
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
 plt.rc('axes', titlesize=MEDIUM_SIZE)     # fontsize of the axes title
@@ -88,6 +89,8 @@ def main(arguments):
         # for val in :
         val = np.mean(aggregated_info[exp_set_name]["total_power"])
         exp_set_name_val = exp_set_name
+        if "vgg" not in exp_set_name:
+            continue
         if args.fit:
             if "google" in exp_set_name or "alex" in exp_set_name or "squeeze" in exp_set_name or "hard" in exp_set_name:
                 continue 
@@ -114,26 +117,36 @@ def main(arguments):
     print('Pearsons correlation: %.3f' % corr)
 
     
-    a4_dims = (14, 9)
+    a4_dims = (14, 10)
     fig, ax = plt.subplots(figsize=a4_dims)
     print(df)
-    graph = sns.scatterplot(ax=ax, y="kWh", x="FPOs(G)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, y="kWh", x="FPOs(G)", data=df, sizes=(350, 600),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend=None)#, palette="Set1")
     box = ax.get_position()
-    ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
-    ax.axhline(0.041845, 0, 4.39/25.0, ls='--')
-    ax.axhline(0.040427, 0, 23.84/25.0, ls='--')
-    ax.axvline(3.39, 0, 0.041845/0.077, ls='--')
-    ax.axvline(22.84, 0, 0.040427/0.077, ls='--') 
-    plt.annotate('', (3.39, 0.005), (22.84, 0.005), arrowprops={'arrowstyle': '<->'})
-    plt.annotate(
-        'Difference: 19.45 GFPOs (~6.64x)', xy=(11.45, 0.005), xycoords='data',
-        xytext=(0, 0.5), textcoords='offset points')
-    plt.annotate('',  (2.5, 0.040427), (2.5, 0.041845), arrowprops={'arrowstyle': '<->'})
-    plt.annotate(
-        'Difference: .001 kWh (~1.02x)', xy=(1.5, 0.045), xycoords='data',
-         xytext=(0, 0.00), textcoords='offset points')
-    plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
+    ax.set_position([box.x0,box.y0,box.width,box.height])
+
+    annotations = []
+    for kwh, fpo, name in zip(df["kWh"], df["FPOs(G)"], df["Model"]):
+        annotations.append(ax.annotate(name, (fpo, kwh), fontsize=18))
+    # from scipy import interpolate
+    # f = interpolate.interp1d()
+    # x = np.linspace(min(df["kWh"]), max(df["kWh"]), 1000)
+    # y = f(x)
+    # adjust_text(annotations, df["kWh"], df["FPOs(G)"], ax=ax, precision=0.001, arrowprops=dict(arrowstyle="->", color='r', lw=0.7), force_text=(1.2, 1.2), force_objects=(1.2, 1.2))
+    # ax.axhline(0.041845, 0, 4.39/25.0, ls='--')
+    # ax.axhline(0.040427, 0, 23.84/25.0, ls='--')
+    # ax.axvline(3.39, 0, 0.041845/0.077, ls='--')
+    # ax.axvline(22.84, 0, 0.040427/0.077, ls='--') 
+    # plt.annotate('', (3.39, 0.005), (22.84, 0.005), arrowprops={'arrowstyle': '<->'})
+    # plt.annotate(
+    #     'Difference: 19.45 GFPOs (~6.64x)', xy=(9.45, 0.005), xycoords='data',
+    #     xytext=(0, 0.5), textcoords='offset points')
+    # plt.annotate('',  (2.5, 0.040427), (2.5, 0.041845), arrowprops={'arrowstyle': '<->'})
+    # plt.annotate(
+    #     'Difference: .001 kWh (~1.02x)', xy=(1.5, 0.045), xycoords='data',
+    #      xytext=(0, 0.00), textcoords='offset points')
+    # plt.legend(loc='lower center',bbox_to_anchor=(-3.5,0.0),ncol=6, fontsize=20)
     plt.ylim(bottom=0.0)
+    print(adjust_text(annotations, y=df["kWh"], x=df["FPOs(G)"], ax=ax, arrowprops=dict(arrowstyle="->", color='r', lw=1.0), expand_points=(1.3, 1.2), expand_text=(1.3, 1.2), precision=0.001, force_text= (1.1, .6), force_points=(1.0, 1.0), force_objects=(1.0, 0.6)))
 
     # plt.legend(loc='lower right')
     #Use regplot to plot the regression line for the whole points
@@ -164,9 +177,9 @@ def main(arguments):
     df["Top-1 Accuracy"] = df["Top-1 Accuracy"].astype(float)
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
-    graph = sns.scatterplot(ax=ax,y="Time(h)", x="FPOs(G)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax,y="Time(h)", x="FPOs(G)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend=None)#, palette="Set1")
     box = ax.get_position()
-    ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
+    ax.set_position([box.x0,box.y0,box.width,box.height])
     
     print("FPOs - Time")
     print(linregress(df["FPOs(G)"], df["Time(h)"]))
@@ -174,7 +187,7 @@ def main(arguments):
 
     corr, _ = pearsonr(df["FPOs(G)"], df["Time(h)"])
     print('Pearsons correlation: %.3f' % corr) 
-    plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
+    # plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
     plt.ylim(bottom=0.0)
 
     # plt.legend(loc='lower right')
@@ -206,15 +219,15 @@ def main(arguments):
     df["Params(M)"] = df["Params(M)"].astype(float)
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
-    graph = sns.scatterplot(ax=ax, y="Time(h)", x="Params(M)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend='brief')#, palette="Set1")
+    graph = sns.scatterplot(ax=ax, y="Time(h)", x="Params(M)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend=None)#, palette="Set1")
     box = ax.get_position()
-    ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
+    ax.set_position([box.x0,box.y0,box.width,box.height])
     print("Params - Time")
     print(linregress(df["Params(M)"], df["Time(h)"]))
 
     corr, _ = pearsonr(df["Params(M)"], df["Time(h)"])
     print('Pearsons correlation: %.3f' % corr) 
-    plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
+    # plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
     plt.ylim(bottom=0.0)
 
     # plt.legend(loc='lower right')
@@ -246,15 +259,15 @@ def main(arguments):
     df["Top-1 Accuracy"] = df["Top-1 Accuracy"].astype(float)
     a4_dims = (14, 9)
     fig, ax = plt.subplots(figsize=a4_dims)
-    graph = sns.scatterplot(ax=ax, y="kWh", x="Params(M)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend='brief')
+    graph = sns.scatterplot(ax=ax, y="kWh", x="Params(M)", data=df, sizes=(250, 500),  alpha=.5, hue='Model', size="Top-1 Accuracy", legend=None)
     box = ax.get_position()
-    ax.set_position([box.x0,box.y0,box.width*0.83,box.height])
+    ax.set_position([box.x0,box.y0,box.width,box.height])
     print("Params - kwH")
     print(linregress(df["Params(M)"], df["kWh"]))
 
     corr, _ = pearsonr(df["Params(M)"], df["kWh"])
     print('Pearsons correlation: %.3f' % corr) 
-    plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
+    # plt.legend(loc='upper left',bbox_to_anchor=(1,1.15))
     plt.ylim(bottom=0.0)
 
     # plt.legend(loc='lower right')

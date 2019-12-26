@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<!-- modified from url=(0044)http://idl.cs.washington.edu/papers/tfgraph/ -->
+<html>
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <link rel="stylesheet" type="text/css" href="../../../style/fonts.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <link rel="stylesheet" type="text/css" href="../../../style/main.css">
+    <style type="text/css">
+        :root #content > #center > .dose > .dosesingle,
+        :root #content > #right > .dose > .dosesingle {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+<div class="gutter">
+        <a href="../index.html" >Experiment Sets</a>
+        <div class="nav">
+            <br>
+                <a href="../convnet_3-8_words/index.html" class="at">ConvNet (3-8 words)</a>
+            <br>
+                <a href="../convnet_3-50_words/index.html" class="at">ConvNet (3-50 words)</a>
+            <br>
+                <a href="../convnet_45-50_words/index.html" class="at">ConvNet (45-50 words)</a>
+            <br>
+                <a href="../transformer_3-8_words/index.html" class="at">Transformer (3-8 words)</a>
+            <br>
+                <a href="../transformer_3-50_words/index.html" class="at">Transformer (3-50 words)</a>
+            <br>
+                <a href="../transformer_45-50_words/index.html" class="at">Transformer (45-50 words)</a>
+            
+        </div>
+    </div>
+    <div id="main">
+        <div id="content">
+            <div class="title">
+                    <div class="heading"> <a href="./index.html">ConvNet (3-50 words)</a></div>
+            </div>
+            <br/>
+            <br/>
+            
+            <div class="heading">Experiment Information</div>
+
+            Jump to: <br/>
+            <a href="#cpu_info">[CPU Info]</a> | <a href="#gpu_info">[GPU Info]</a> | <a href="#package_info">[Python Package Info]</a> | <a href="#carbon_info">[Carbon Emission Region Info]</a> | <a href="#stats">[Average Statistics]</a> | <a href="#graphs">[Graphs]</a>
+            
+            <a href="data/3.zip">[ Data Download ]</a>
+
+            <div class="paper tables">
+                <a name="cpu_info"></a> 
+                <br> <div class="header"><span>CPU Info</span></div></span>
+                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>python_version</th>
+      <td>3.7.5.final.0 (64 bit)</td>
+    </tr>
+    <tr>
+      <th>cpuinfo_version</th>
+      <td>[5, 0, 0]</td>
+    </tr>
+    <tr>
+      <th>arch</th>
+      <td>X86_64</td>
+    </tr>
+    <tr>
+      <th>bits</th>
+      <td>64</td>
+    </tr>
+    <tr>
+      <th>count</th>
+      <td>32</td>
+    </tr>
+    <tr>
+      <th>raw_arch_string</th>
+      <td>x86_64</td>
+    </tr>
+    <tr>
+      <th>vendor_id</th>
+      <td>GenuineIntel</td>
+    </tr>
+    <tr>
+      <th>brand</th>
+      <td>Intel(R) Xeon(R) CPU E5-2630 v3 @ 2.40GHz</td>
+    </tr>
+    <tr>
+      <th>hz_advertised</th>
+      <td>2.4000 GHz</td>
+    </tr>
+    <tr>
+      <th>hz_actual</th>
+      <td>1.2623 GHz</td>
+    </tr>
+    <tr>
+      <th>hz_advertised_raw</th>
+      <td>[2400000000, 0]</td>
+    </tr>
+    <tr>
+      <th>hz_actual_raw</th>
+      <td>[1262343000, 0]</td>
+    </tr>
+    <tr>
+      <th>stepping</th>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>model</th>
+      <td>63</td>
+    </tr>
+    <tr>
+      <th>family</th>
+      <td>6</td>
+    </tr>
+    <tr>
+      <th>flags</th>
+      <td>[abm, acpi, aes, aperfmperf, apic, arat, arch_perfmon, avx, avx2, bmi1, bmi2, bts, clflush, cmov, constant_tsc, cqm, cqm_llc, cqm_occup_llc, cx16, cx8, dca, de, ds_cpl, dtes64, dtherm, dts, eagerfpu, epb, ept, erms, est, f16c, flexpriority, fma, fpu, fsgsbase, fxsr, ht, ida, invpcid, invpcid_single, kaiser, lahf_lm, lm, mca, mce, mmx, monitor, movbe, msr, mtrr, nonstop_tsc, nopl, nx, pae, pat, pbe, pcid, pclmulqdq, pdcm, pdpe1gb, pebs, pge, pln, pni, popcnt, pse, pse36, pts, rdrand, rdtscp, rep_good, retpoline, sdbg, sep, smep, smx, ss, sse, sse2, sse4_1, sse4_2, ssse3, syscall, tm, tm2, tpr_shadow, tsc, tsc_adjust, tsc_deadline_timer, vme, vmx, vnmi, vpid, x2apic, xsave, xsaveopt, xtopology, xtpr]</td>
+    </tr>
+    <tr>
+      <th>l3_cache_size</th>
+      <td>20480 KB</td>
+    </tr>
+    <tr>
+      <th>l2_cache_size</th>
+      <td>256 KB</td>
+    </tr>
+    <tr>
+      <th>l1_data_cache_size</th>
+      <td>32 KB</td>
+    </tr>
+    <tr>
+      <th>l1_instruction_cache_size</th>
+      <td>32 KB</td>
+    </tr>
+    <tr>
+      <th>usable_cpus</th>
+      <td>8</td>
+    </tr>
+  </tbody>
+</table>
+                <a name="gpu_info"></a> 
+                <div class="header"><span>GPU Info</span></div></span>
+                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>name</th>
+      <td>TITAN V</td>
+    </tr>
+    <tr>
+      <th>total_memory</th>
+      <td>12036 MiB</td>
+    </tr>
+    <tr>
+      <th>driver_version</th>
+      <td>410.78</td>
+    </tr>
+    <tr>
+      <th>cuda_version</th>
+      <td>10.0</td>
+    </tr>
+  </tbody>
+</table>
+                <a name="package_info"></a> 
+                <div class="header"><span>Package Info</span></div></span>
+                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>wrapt 1.11.2</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>wheel 0.33.6</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Werkzeug 0.16.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>wcwidth 0.1.7</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>urllib3 1.25.6</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>ujson 1.35</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>typing 3.7.4.1</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>tqdm 4.36.1</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>torchvision 0.4.0+cu92</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>torch 1.2.0+cu92</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>thop 0.0.31.post1910280903</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>termcolor 1.1.0</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>tensorpack 0.9.8</td>
+    </tr>
+    <tr>
+      <th>13</th>
+      <td>tensorflow-gpu 1.14.0</td>
+    </tr>
+    <tr>
+      <th>14</th>
+      <td>tensorflow-estimator 1.14.0</td>
+    </tr>
+    <tr>
+      <th>15</th>
+      <td>tensorboard 1.14.0</td>
+    </tr>
+    <tr>
+      <th>16</th>
+      <td>tabulate 0.8.5</td>
+    </tr>
+    <tr>
+      <th>17</th>
+      <td>subword-nmt 0.3.6</td>
+    </tr>
+    <tr>
+      <th>18</th>
+      <td>stevedore 1.31.0</td>
+    </tr>
+    <tr>
+      <th>19</th>
+      <td>stable-baselines 2.8.0</td>
+    </tr>
+    <tr>
+      <th>20</th>
+      <td>SQLAlchemy 1.3.10</td>
+    </tr>
+    <tr>
+      <th>21</th>
+      <td>soupsieve 1.9.4</td>
+    </tr>
+    <tr>
+      <th>22</th>
+      <td>sklearn 0.0</td>
+    </tr>
+    <tr>
+      <th>23</th>
+      <td>six 1.12.0</td>
+    </tr>
+    <tr>
+      <th>24</th>
+      <td>Shapely 1.6.4.post2</td>
+    </tr>
+    <tr>
+      <th>25</th>
+      <td>setuptools 41.6.0.post20191030</td>
+    </tr>
+    <tr>
+      <th>26</th>
+      <td>scipy 1.3.1</td>
+    </tr>
+    <tr>
+      <th>27</th>
+      <td>scikit-learn 0.21.3</td>
+    </tr>
+    <tr>
+      <th>28</th>
+      <td>sacremoses 0.0.35</td>
+    </tr>
+    <tr>
+      <th>29</th>
+      <td>requests 2.22.0</td>
+    </tr>
+    <tr>
+      <th>30</th>
+      <td>regex 2019.11.1</td>
+    </tr>
+    <tr>
+      <th>31</th>
+      <td>ratelim 0.1.6</td>
+    </tr>
+    <tr>
+      <th>32</th>
+      <td>pyzmq 18.1.0</td>
+    </tr>
+    <tr>
+      <th>33</th>
+      <td>PyYAML 5.1.2</td>
+    </tr>
+    <tr>
+      <th>34</th>
+      <td>pytz 2019.3</td>
+    </tr>
+    <tr>
+      <th>35</th>
+      <td>python-editor 1.0.4</td>
+    </tr>
+    <tr>
+      <th>36</th>
+      <td>python-dateutil 2.8.0</td>
+    </tr>
+    <tr>
+      <th>37</th>
+      <td>pyperclip 1.7.0</td>
+    </tr>
+    <tr>
+      <th>38</th>
+      <td>pyparsing 2.4.2</td>
+    </tr>
+    <tr>
+      <th>39</th>
+      <td>PyLaTeX 1.3.1</td>
+    </tr>
+    <tr>
+      <th>40</th>
+      <td>pyglet 1.3.2</td>
+    </tr>
+    <tr>
+      <th>41</th>
+      <td>py-cpuinfo 5.0.0</td>
+    </tr>
+    <tr>
+      <th>42</th>
+      <td>psutil 5.6.3</td>
+    </tr>
+    <tr>
+      <th>43</th>
+      <td>protobuf 3.10.0</td>
+    </tr>
+    <tr>
+      <th>44</th>
+      <td>prettytable 0.7.2</td>
+    </tr>
+    <tr>
+      <th>45</th>
+      <td>pip 19.3.1</td>
+    </tr>
+    <tr>
+      <th>46</th>
+      <td>Pillow 6.2.1</td>
+    </tr>
+    <tr>
+      <th>47</th>
+      <td>pbr 5.4.3</td>
+    </tr>
+    <tr>
+      <th>48</th>
+      <td>pandas 0.24.2</td>
+    </tr>
+    <tr>
+      <th>49</th>
+      <td>ordered-set 3.1.1</td>
+    </tr>
+    <tr>
+      <th>50</th>
+      <td>optuna 0.17.1</td>
+    </tr>
+    <tr>
+      <th>51</th>
+      <td>opencv-python 4.1.1.26</td>
+    </tr>
+    <tr>
+      <th>52</th>
+      <td>numpy 1.17.3</td>
+    </tr>
+    <tr>
+      <th>53</th>
+      <td>msgpack 0.6.2</td>
+    </tr>
+    <tr>
+      <th>54</th>
+      <td>msgpack-numpy 0.4.4.3</td>
+    </tr>
+    <tr>
+      <th>55</th>
+      <td>mpi4py 3.0.2</td>
+    </tr>
+    <tr>
+      <th>56</th>
+      <td>matplotlib 3.1.1</td>
+    </tr>
+    <tr>
+      <th>57</th>
+      <td>MarkupSafe 1.1.1</td>
+    </tr>
+    <tr>
+      <th>58</th>
+      <td>Markdown 3.1.1</td>
+    </tr>
+    <tr>
+      <th>59</th>
+      <td>Mako 1.1.0</td>
+    </tr>
+    <tr>
+      <th>60</th>
+      <td>kiwisolver 1.1.0</td>
+    </tr>
+    <tr>
+      <th>61</th>
+      <td>Keras-Preprocessing 1.1.0</td>
+    </tr>
+    <tr>
+      <th>62</th>
+      <td>Keras-Applications 1.0.8</td>
+    </tr>
+    <tr>
+      <th>63</th>
+      <td>jsonpickle 1.2</td>
+    </tr>
+    <tr>
+      <th>64</th>
+      <td>joblib 0.14.0</td>
+    </tr>
+    <tr>
+      <th>65</th>
+      <td>idna 2.8</td>
+    </tr>
+    <tr>
+      <th>66</th>
+      <td>h5py 2.10.0</td>
+    </tr>
+    <tr>
+      <th>67</th>
+      <td>gym 0.15.3</td>
+    </tr>
+    <tr>
+      <th>68</th>
+      <td>grpcio 1.24.3</td>
+    </tr>
+    <tr>
+      <th>69</th>
+      <td>google-pasta 0.1.7</td>
+    </tr>
+    <tr>
+      <th>70</th>
+      <td>geocoder 1.38.1</td>
+    </tr>
+    <tr>
+      <th>71</th>
+      <td>gast 0.3.2</td>
+    </tr>
+    <tr>
+      <th>72</th>
+      <td>future 0.18.1</td>
+    </tr>
+    <tr>
+      <th>73</th>
+      <td>fastBPE 0.1.0</td>
+    </tr>
+    <tr>
+      <th>74</th>
+      <td>essential-generators 0.9.2</td>
+    </tr>
+    <tr>
+      <th>75</th>
+      <td>deepdiff 4.0.8</td>
+    </tr>
+    <tr>
+      <th>76</th>
+      <td>decorator 4.4.1</td>
+    </tr>
+    <tr>
+      <th>77</th>
+      <td>Cython 0.29.13</td>
+    </tr>
+    <tr>
+      <th>78</th>
+      <td>cycler 0.10.0</td>
+    </tr>
+    <tr>
+      <th>79</th>
+      <td>colorlog 4.0.2</td>
+    </tr>
+    <tr>
+      <th>80</th>
+      <td>cmd2 0.8.9</td>
+    </tr>
+    <tr>
+      <th>81</th>
+      <td>cloudpickle 1.2.2</td>
+    </tr>
+    <tr>
+      <th>82</th>
+      <td>cliff 2.16.0</td>
+    </tr>
+    <tr>
+      <th>83</th>
+      <td>Click 7.0</td>
+    </tr>
+    <tr>
+      <th>84</th>
+      <td>chardet 3.0.4</td>
+    </tr>
+    <tr>
+      <th>85</th>
+      <td>certifi 2019.9.11</td>
+    </tr>
+    <tr>
+      <th>86</th>
+      <td>bs4 0.0.1</td>
+    </tr>
+    <tr>
+      <th>87</th>
+      <td>bounter 1.1.0</td>
+    </tr>
+    <tr>
+      <th>88</th>
+      <td>beautifulsoup4 4.8.1</td>
+    </tr>
+    <tr>
+      <th>89</th>
+      <td>atari-py 0.2.6</td>
+    </tr>
+    <tr>
+      <th>90</th>
+      <td>astor 0.8.0</td>
+    </tr>
+    <tr>
+      <th>91</th>
+      <td>arrow 0.15.2</td>
+    </tr>
+    <tr>
+      <th>92</th>
+      <td>alembic 1.2.1</td>
+    </tr>
+    <tr>
+      <th>93</th>
+      <td>absl-py 0.8.1</td>
+    </tr>
+    <tr>
+      <th>94</th>
+      <td>experiment-impact-tracker 0.1.1</td>
+    </tr>
+    <tr>
+      <th>95</th>
+      <td>torchcule 0.1.0</td>
+    </tr>
+    <tr>
+      <th>96</th>
+      <td>apex 0.1</td>
+    </tr>
+  </tbody>
+</table>
+                <a name="carbon_info"></a> 
+                <br> <div class="header"><span>Carbon Info</span></div></span>
+                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Realtime Carbon Intensity Data Source</th>
+      <td>http://www.caiso.com/outlook/SP/History/&lt;date&gt;/co2.csv</td>
+    </tr>
+    <tr>
+      <th>Realtime Carbon Intensity Average During Exp</th>
+      <td>359.471</td>
+    </tr>
+    <tr>
+      <th>Region Average Carbon Intensity</th>
+      <td>250.733</td>
+    </tr>
+    <tr>
+      <th>Region Average Carbon Intensity Source</th>
+      <td>https://github.com/tmrowco/electricitymap-contrib/blob/master/config/co2eq_parameters.json (ElectricityMap Average, 2019)</td>
+    </tr>
+    <tr>
+      <th>Assumed PUE</th>
+      <td>1.58</td>
+    </tr>
+    <tr>
+      <th>Compute Region</th>
+      <td>California, United States of America</td>
+    </tr>
+    <tr>
+      <th>Experiment Impact Tracker Version</th>
+      <td>0.1.1</td>
+    </tr>
+  </tbody>
+</table>
+                <a name="stats"></a> 
+                <br> <div class="header"><span>Stats</span></div></span>
+                <table border="1" class="dataframe table table-striped">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>0</th>
+      <th>1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Key</td>
+      <td>Value</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>cpu_hours</td>
+      <td>0.166556</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>gpu_hours</td>
+      <td>0.0546802</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>estimated_carbon_impact_kg</td>
+      <td>0.00745808</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>total_power</td>
+      <td>0.0207478</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>kw_hr_gpu</td>
+      <td>0.0073007</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>kw_hr_cpu</td>
+      <td>0.00583083</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>exp_len_hours</td>
+      <td>0.153873</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>average_realtime_carbon_intensity</td>
+      <td>359.471</td>
+    </tr>
+  </tbody>
+</table>
+            </div>
+            <a name="graphs"></a> 
+            <div class="heading">Graphs</div>
+            <div class="paper tables">
+                <img style="width: 80%;" src="./images_3/16_8/5_min_cpu_count_adjusted_average_load.png">
+                <img style="width: 80%;" src="./images_3/16_8/10_min_cpu_count_adjusted_average_load.png">
+                <img style="width: 80%;" src="./images_3/16_8/15_min_cpu_count_adjusted_average_load.png">
+                <img style="width: 80%;" src="./images_3/16_8/rapl_power_draw_absolute.png">
+                <img style="width: 80%;" src="./images_3/16_8/rapl_estimated_attributable_power_draw.png">
+                <img style="width: 80%;" src="./images_3/16_8/average_relative_cpu_utilization.png">
+                <img style="width: 80%;" src="./images_3/16_8/absolute_cpu_utilization.png">
+                <img style="width: 80%;" src="./images_3/16_8/relative_mem_usage.png">
+                <img style="width: 80%;" src="./images_3/16_8/absolute_mem_usage.png">
+                <img style="width: 80%;" src="./images_3/16_8/absolute_mem_percent_usage.png">
+                <img style="width: 80%;" src="./images_3/16_8/nvidia_draw_absolute.png">
+                <img style="width: 80%;" src="./images_3/16_8/nvidia_estimated_attributable_power_draw.png">
+                <img style="width: 80%;" src="./images_3/16_8/average_gpu_estimated_utilization_absolute.png">
+                <img style="width: 80%;" src="./images_3/16_8/average_gpu_estimated_utilization_relative.png">
+                <img style="width: 80%;" src="./images_3/16_8/realtime_carbon_intensity.png">
+                <img style="width: 80%;" src="./images_3/16_8/disk_write_speed.png">
+                <img style="width: 80%;" src="./images_3/16_8/per_gpu_power_draw.0.png">
+                
+            </div>     
+        </div>
+    </div>
+
+    
+</body>
+
+</html>
