@@ -26,7 +26,7 @@ http = httplib2.Http()
 status, response = http.request(args.main_url)
 
 links = []
-for link in BeautifulSoup(response, parse_only=SoupStrainer('a')):
+for link in BeautifulSoup(response).find_all('a'):
     if link.has_attr('href'):
         href = link["href"]
         links.append(href)
@@ -43,6 +43,9 @@ links = list(filter(_filter_func, links))
 
 links = random.sample(links, args.n)
 
+for link in links:
+    print(urljoin(args.main_url, link + ".pdf"))
+
 def _grab_text_for_pdf(url):
     r = requests.get(url)
     f = io.BytesIO(r.content)
@@ -50,14 +53,18 @@ def _grab_text_for_pdf(url):
     return "".join(pdf)
 
 
-compute_terms = ["flop", "fpo", "gpu", "cpu", "hours", "nvidia", "intel", "pflops", "flops", "fpos", "gpu-hours", "cpu-hours", "cpu-time", "gpu-time", "multiply-add", "madd", "tpu"]
-energy_terms = ["watt", "kWh", "joule", "joules", "wh", "kwhs", "watts", "rapl"]
+compute_terms = ["flop", "fpo", "pflop", "tflops", "tflop", "parameters", "params", "pflops", "flops", "fpos", "gpu-hours", "cpu-hours", "cpu-time", "gpu-time", "multiply-add", "madd"]
+hardware_terms = ["nvidia", "intel", "amd", "radeon", "gtx", "titan", "v100", "tpu", "ryzen", "cpu", "gpu"]
+time_terms = ["seconds", "second", "hour", "hours", "day", "days", "time", "experiment length", "run-time", "runtime"]
+energy_terms = ["watt", "kWh", "joule", "joules", "wh", "kwhs", "watts", "rapl", "energy", "power"]
 carbon_terms = ["co2", "carbon", "emissions"]
 
 term_counts = {
     "energy": [],
     "carbon": [],
-    "compute": []
+    "compute": [],
+    "time" : [],
+    "hardware" : []
 }
 
 def search(target, text, context=6):
@@ -80,7 +87,7 @@ for link in links:
     print(link)
     text = _grab_text_for_pdf(link).lower()
 
-    for term_list, term_count_index in [(compute_terms, "compute"), (energy_terms, "energy"), (carbon_terms, "carbon")]:
+    for term_list, term_count_index in [(compute_terms, "compute"), (energy_terms, "energy"), (carbon_terms, "carbon"), (hardware_terms, "hardware"), (time_terms, "time")]:
         for term in term_list:
             terms = list(search(term, text))
             if len(terms) > 0:
