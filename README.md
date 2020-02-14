@@ -22,7 +22,7 @@ paper_specific/translate.py
 Script to run computer vision experiments:
 
 ```
-paper_specific/translate.py
+paper_specific/run_inference.py
 ```
 
 For the bar plot of transfomer vs conv:
