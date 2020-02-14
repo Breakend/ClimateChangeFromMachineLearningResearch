@@ -13,6 +13,18 @@ This is a very messy repo containing code for experiments and the generating of 
 }
 ```
 
+Script to run translation experiments:
+
+```
+paper_specific/translate.py
+```
+
+Script to run computer vision experiments:
+
+```
+paper_specific/translate.py
+```
+
 For the bar plot of transfomer vs conv:
 
 ```
